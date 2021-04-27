@@ -1,0 +1,13 @@
+{
+  "name": "lx/template",
+  "description": "Lx framework template engine",
+  "version": "1.0.0",
+  "keywords": ["lx", "template"],
+  "type": "library",
+  "authors": [
+    {
+      "name": "a.sedov",
+      "email": "altkkb.vds@mail.ru"
+    }
+  ]
+}
