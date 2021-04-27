@@ -6,6 +6,7 @@ use lx\File;
 use lx\PackageBrowser;
 use lx\Plugin;
 use lx\Service;
+use lx\template\TemplateParser;
 
 class Respondent extends \lx\Respondent
 {
@@ -47,6 +48,40 @@ class Respondent extends \lx\Respondent
         ];
     }
 
+    public function getSnippetData(string $pluginName, string $snippetPath): array
+    {
+        $plugin = $this->app->getPlugin($pluginName);
+        if (!$plugin) {
+            return [
+                'success' => false,
+                'message' => "Plugin $pluginName not found",
+            ];
+        }
+
+        $file = $plugin->findFile($snippetPath);
+        if (!$file) {
+            return [
+                'success' => false,
+                'message' => 'Snippet not found',
+            ];
+        }
+        
+        $text = $file->get();
+        $parser = new TemplateParser();
+        $tree = $parser->parse($text);
+        if ($parser->hasErrors()) {
+            return [
+                'success' => false,
+                'message' => $parser->getFirstError(),
+            ];
+        }
+
+        return [
+            'success' => true,
+            'data' => [], //TODO $tree->toArray(),
+        ];
+    }
+
 
     /*******************************************************************************************************************
      * PRIVATE
@@ -77,7 +112,7 @@ class Respondent extends \lx\Respondent
         $dirs = $plugin->conductor->getSnippetDirectories();
         $pluginData = [];
         foreach ($dirs as $dir) {
-            $files = $dir->getAllFiles('*.lxsnt');
+            $files = $dir->getAllFiles('*.lxtpl');
             $fileNames = [];
             /** @var File $file */
             foreach ($files as $file) {
