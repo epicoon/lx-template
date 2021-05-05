@@ -19,7 +19,7 @@ class TemplateParser
 
     public function parse(string $text): ?TemplateTree
     {
-        $this->rootNode = new TemplateNode();
+        $this->rootNode = TemplateNode::create();
         $this->contents = [];
         $this->named = [];
         $this->elements = [];
@@ -65,7 +65,7 @@ class TemplateParser
         $processedContents = [];
         foreach ($contents as $content) {
             $list = $content['content'];
-            $rootNode = new TemplateNode(['indent' => 0]);
+            $rootNode = TemplateNode::create(0);
             $this->processElement($list, $rootNode, 0);
             $processedContents[$content['key']] = $rootNode;
         }
@@ -177,7 +177,7 @@ class TemplateParser
             $nameString = preg_replace('/^</', '<_:', $nameString);
             $arr['list'][0]['widget'] = $nameString;
 
-            $node = new TemplateNode();
+            $node = TemplateNode::create();
             $this->processElement($arr, $node, 0);
             $named[$name] = $node;
         }
@@ -218,7 +218,7 @@ class TemplateParser
                 throw new \Exception('Wrong template syntax: sequence error');
             }
 
-            $node = new TemplateNode($nodeConfig);
+            $node = TemplateNode::createByParsed($nodeConfig);
             if ($node->isType(TemplateNode::TYPE_WIDGET)) {
                 $arr = $node->toArray();
                 if ($arr['widget'] != '_' && $arr['var'] && array_key_exists($arr['var'], $this->named)) {

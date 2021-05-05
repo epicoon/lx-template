@@ -26,6 +26,9 @@ Plugin.core.trigger('e-pluginSelected', {pluginName:'lx/help:test'});
 
 
 
+
+
+
 // var ab = new lx.ActiveBox({
 // 	header: 'Some snippet',
 // 	geom: true

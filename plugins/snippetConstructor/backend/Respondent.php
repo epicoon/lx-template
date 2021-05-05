@@ -3,10 +3,12 @@
 namespace lx\template\plugins\snippetConstructor\backend;
 
 use lx\File;
+use lx\JsCompiler;
 use lx\PackageBrowser;
 use lx\Plugin;
 use lx\Service;
 use lx\template\TemplateParser;
+use lx\template\tree\TemplateTree;
 
 class Respondent extends \lx\Respondent
 {
@@ -27,11 +29,10 @@ class Respondent extends \lx\Respondent
             }
         }
 
-
         return $result;
     }
 
-    public function getPluginData($pluginName): array
+    public function getPluginData(string $pluginName): array
     {
         $plugin = $this->app->getPlugin($pluginName);
         if (!$plugin) {
@@ -76,9 +77,17 @@ class Respondent extends \lx\Respondent
             ];
         }
 
+        $code = "#lx:tpl-begin;$text#lx:tpl-end;";
+        $compiler = new JsCompiler();
+        $code = $compiler->compileCode($code, $file->getPath());
+        $dependencies = $compiler->getDependencies()->toArray();
         return [
             'success' => true,
-            'data' => [], //TODO $tree->toArray(),
+            'data' => [
+                'tree' => $tree->toArray(),
+                'code' => $code,
+                'dependencies' => $dependencies,
+            ],
         ];
     }
 
@@ -87,11 +96,7 @@ class Respondent extends \lx\Respondent
      * PRIVATE
      ******************************************************************************************************************/
 
-    /**
-     * @param Service $service
-     * @return array
-     */
-    private function getPluginsData($service)
+    private function getPluginsData(Service $service): array
     {
         $plugins = $service->getStaticPlugins();
         $serviceData = [];
@@ -103,11 +108,7 @@ class Respondent extends \lx\Respondent
         return $serviceData;
     }
 
-    /**
-     * @param Plugin $plugin
-     * @return array
-     */
-    private function getSnippetsList($plugin)
+    private function getSnippetsList(Plugin $plugin): array
     {
         $dirs = $plugin->conductor->getSnippetDirectories();
         $pluginData = [];

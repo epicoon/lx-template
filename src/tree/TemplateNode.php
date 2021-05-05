@@ -7,6 +7,7 @@ use lx\template\tree\parser\NodeConfigParser;
 
 class TemplateNode
 {
+    const TYPE_COMMON = 'common';
     const TYPE_WIDGET = 'widget';
     const TYPE_CONTENT = 'content';
 
@@ -16,27 +17,60 @@ class TemplateNode
 
     private int $level;
     private string $type;
-    private NodeData $data;
+    private ?NodeData $data;
 
-    public function __construct(?array $config = null)
+    public static function create(int $level = -1): TemplateNode
     {
-        if ($config === null) {
-            $this->level = -1;
-            return;
-        }
-        
-        $this->level = $config['indent'] ?? 0;
+        $node = new self();
+        $node->level = $level;
+        $node->type = self::TYPE_COMMON;
+        $node->data = null;
+        return $node;
+    }
+
+    public static function createByParsed(array $config): TemplateNode
+    {
+        $node = new self();
+        $node->level = $config['indent'] ?? 0;
         $type = Factory::definyTypeByConfig($config);
         if (!$type) {
-            return;
+            $node->type = self::TYPE_COMMON;
+            $node->data = null;
+            return $node;
         }
 
-        $this->type = $type;
+        $node->type = $type;
 
-        $parser = Factory::createParser($this->type);
+        $parser = Factory::createParser($node->type);
         $data = $parser->parse($config);
-        $this->data = Factory::createData($this->type);
-        $this->data->init($data);
+        $node->data = Factory::createData($node->type);
+        $node->data->init($data);
+        return $node;
+    }
+
+    public static function createByArray(array $array): TemplateNode
+    {
+        $node = new self($array['level'] ?? -1, $array['type'] ?? self::TYPE_COMMON);
+        if (!$node->isType(self::TYPE_COMMON) && array_key_exists('data', $array)) {
+            $node->data = Factory::createData($node->type);
+            $node->data->init($array['data']);
+        }
+
+        if (array_key_exists('children', $array)) {
+            foreach ($array['children'] as $childData) {
+                $child = self::createByArray($childData);
+                $node->add($child);
+            }
+        }
+
+        return $node;
+    }
+
+    protected function __construct(int $level = -1, string $type = self::TYPE_COMMON)
+    {
+        $this->level = $level;
+        $this->type = $type;
+        $this->data = null;
     }
     
     public function isRoot(): bool
@@ -122,6 +156,23 @@ class TemplateNode
     public function toArray(): array
     {
         return $this->data->toArray();
+    }
+
+    public function toArrayWithChildren(): array
+    {
+        $result = ['type' => $this->type];
+        if (!$this->isType(self::TYPE_COMMON)) {
+            $result['data'] = $this->toArray();
+        }
+        
+        if (!empty($this->children)) {
+            $result['children'] = [];
+            foreach ($this->children as $child) {
+                $result['children'][] = $child->toArrayWithChildren();
+            }
+        }
+        
+        return $result;        
     }
     
     protected function setParent(TemplateNode $node): void

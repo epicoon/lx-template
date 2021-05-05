@@ -5,7 +5,8 @@ class Core #lx:namespace lxsc {
 		this.plugin = plugin;
 		this.widgets = config.widgets;
 
-		this.selectedPluginName = null;
+		this.selectedPlugin = null;
+		this.selectedSnippet = null;
 
 		__initEventListeners(this);
 	}
@@ -35,7 +36,7 @@ function __onPluginSelected(event) {
 		console.log('__onPluginSelected');
 		console.log(res);
 
-		this.selectedPluginName = event.data.pluginName;
+		this.selectedPlugin = event.data.pluginName;
 		this.widgets.mainMenu.setPlugin(event.data.pluginName);
 		this.widgets.mainMenu.setSnippetsList(res.data);
 	});
@@ -43,18 +44,53 @@ function __onPluginSelected(event) {
 
 function __onSnippetSelected(event) {
 	console.log('__onSnippetSelected');	
-	console.log(this.selectedPluginName);
-	console.log(event.data);
 
-	^Respondent.getSnippetData(this.selectedPluginName, event.data.snippetPath).then(res=>{
+	^Respondent.getSnippetData(this.selectedPlugin, event.data.snippetPath).then(res=>{
 		if (res.success === false) {
 			lx.Tost.error(res.message);
 			return;
 		}
 
-
-		console.log(res);
-
-
+		this.selectedSnippet = event.data.snippetPath;
+		__processSnippetData(this, res.data);
 	});
 }
+
+function __processSnippetData(self, data) {
+	console.log(data);
+
+	var need = lx.dependencies.defineNecessaryModules(data.dependencies.modules);
+	if (need.lxEmpty) {
+		__renderSnippet(self, data.code, data.tree);
+	} else {
+		var modulesRequest = new lx.ServiceRequest('get-modules', need);
+		modulesRequest.send().then(res=>{
+			if (!res) return;
+			lx.createAndCallFunction('', res);
+			lx.dependencies.depend({
+				modules: need
+			});
+			__renderSnippet(self, data.code, data.tree);
+		});
+	}
+}
+
+function __renderSnippet(self, code, tree) {
+	var snippetBox = new lx.ActiveBox({
+		geom: true,
+		header: self.selectedPlugin + ' - ' + self.selectedSnippet,
+		closeButton: true
+	});
+
+
+
+	// var b = snippetBox.add(lx.Box, {geom:[10,10,40,40],style:{fill:'red'}});
+	// var c = b.add(lx.Box, {geom:[10,10,40,40],style:{fill:'green'}});
+	// var ee = snippetBox.getChildren(true);
+	// console.log(ee);
+
+	snippetBox.begin();
+	lx.createAndCallFunction(code);
+	snippetBox.end();
+}
+

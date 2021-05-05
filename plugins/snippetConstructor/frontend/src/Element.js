@@ -14,6 +14,7 @@ class Element #lx:namespace lxsc {
 	}
 
 	setGrid() {
+		this.containerType = self::GRID_CONTAINER;
 		this.containerField = new lxsc.GridField(this);
 	}
 
