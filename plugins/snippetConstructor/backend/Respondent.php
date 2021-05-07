@@ -6,13 +6,14 @@ use lx\File;
 use lx\JsCompiler;
 use lx\PackageBrowser;
 use lx\Plugin;
+use lx\ResponseInterface;
 use lx\Service;
 use lx\template\TemplateParser;
 use lx\template\tree\TemplateTree;
 
 class Respondent extends \lx\Respondent
 {
-    public function getPluginsList(): array
+    public function getPluginsList(): ResponseInterface
     {
         $services = PackageBrowser::getServicesList();
 
@@ -29,66 +30,67 @@ class Respondent extends \lx\Respondent
             }
         }
 
-        return $result;
+        return $this->prepareResponse($result);
     }
 
-    public function getPluginData(string $pluginName): array
+    public function getPluginData(string $pluginName): ResponseInterface
     {
         $plugin = $this->app->getPlugin($pluginName);
         if (!$plugin) {
-            return [
-                'success' => false,
-                'message' => "Plugin $pluginName not found",
-            ];
+            return $this->prepareWarningResponse("Plugin $pluginName not found");
         }
 
         $data = $this->getSnippetsList($plugin);
-        return [
-            'success' => true,
-            'data' => $data,
-        ];
+        return $this->prepareResponse($data);
     }
 
-    public function getSnippetData(string $pluginName, string $snippetPath): array
+    public function getSnippetData(string $pluginName, string $snippetPath): ResponseInterface
     {
         $plugin = $this->app->getPlugin($pluginName);
         if (!$plugin) {
-            return [
-                'success' => false,
-                'message' => "Plugin $pluginName not found",
-            ];
+            return $this->prepareWarningResponse("Plugin $pluginName not found");
         }
 
         $file = $plugin->findFile($snippetPath);
         if (!$file) {
-            return [
-                'success' => false,
-                'message' => 'Snippet not found',
-            ];
+            return $this->prepareWarningResponse('Snippet not found');
         }
         
         $text = $file->get();
         $parser = new TemplateParser();
         $tree = $parser->parse($text);
         if ($parser->hasErrors()) {
-            return [
-                'success' => false,
-                'message' => $parser->getFirstError(),
-            ];
+            return $this->prepareWarningResponse($parser->getFirstError());
         }
 
         $code = "#lx:tpl-begin;$text#lx:tpl-end;";
         $compiler = new JsCompiler();
         $code = $compiler->compileCode($code, $file->getPath());
         $dependencies = $compiler->getDependencies()->toArray();
-        return [
-            'success' => true,
-            'data' => [
-                'tree' => $tree->toArray(),
-                'code' => $code,
-                'dependencies' => $dependencies,
-            ],
-        ];
+
+        $e = $this->prepareResponse([
+            'tree' => $tree->toArray(),
+            'code' => $code,
+            'dependencies' => $dependencies,
+        ]);
+        $aaa = $e->getDataString();
+
+        $aa = 1;
+
+
+        return $this->prepareResponse([
+            'tree' => $tree->toArray(),
+            'code' => $code,
+            'dependencies' => $dependencies,
+        ]);
+//        [
+//            'success' => true,
+//            'data' => [
+//                'tree' => $tree->toArray(),
+//                'code' => $code,
+//                'dependencies' => $dependencies,
+//            ],
+//        ];
     }
 
 

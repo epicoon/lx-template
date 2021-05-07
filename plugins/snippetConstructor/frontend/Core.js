@@ -29,7 +29,7 @@ function __initEventListeners(self) {
 function __onPluginSelected(event) {
 	^Respondent.getPluginData(event.data.pluginName).then(res=>{
 		if (res.success === false) {
-			lx.Tost.error(res.message);
+			lx.Tost.error(res.data);
 			return;
 		}
 
@@ -47,7 +47,7 @@ function __onSnippetSelected(event) {
 
 	^Respondent.getSnippetData(this.selectedPlugin, event.data.snippetPath).then(res=>{
 		if (res.success === false) {
-			lx.Tost.error(res.message);
+			lx.Tost.error(res.data);
 			return;
 		}
 
@@ -66,7 +66,7 @@ function __processSnippetData(self, data) {
 		var modulesRequest = new lx.ServiceRequest('get-modules', need);
 		modulesRequest.send().then(res=>{
 			if (!res) return;
-			lx.createAndCallFunction('', res);
+			lx.createAndCallFunction('', res.data);
 			lx.dependencies.depend({
 				modules: need
 			});

@@ -12,7 +12,7 @@ class MainMenu extends lxsc.gui.Widget #lx:namespace lxsc.gui {
 		// Открытие формы выбора плагина
 		this.box->>plugin.click(()=>{
 			^Respondent.getPluginsList().then(
-				res=>this.getWidget('pluginSelector').open(res)
+				res=>this.getWidget('pluginSelector').open(res.data)
 			);
 		});
 
