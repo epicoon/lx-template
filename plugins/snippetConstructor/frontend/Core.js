@@ -59,38 +59,31 @@ function __onSnippetSelected(event) {
 function __processSnippetData(self, data) {
 	console.log(data);
 
-	var need = lx.dependencies.defineNecessaryModules(data.dependencies.modules);
-	if (need.lxEmpty) {
-		__renderSnippet(self, data.code, data.tree);
-	} else {
-		var modulesRequest = new lx.ServiceRequest('get-modules', need);
-		modulesRequest.send().then(res=>{
-			if (!res) return;
-			lx.createAndCallFunction('', res.data);
-			lx.dependencies.depend({
-				modules: need
-			});
-			__renderSnippet(self, data.code, data.tree);
-		});
-	}
+	lx.dependencies.promiseModules(
+		data.dependencies.modules,
+		()=>__renderSnippet(self, data.code, data.tree)
+	)
 }
 
 function __renderSnippet(self, code, tree) {
-	var snippetBox = new lx.ActiveBox({
-		geom: true,
-		header: self.selectedPlugin + ' - ' + self.selectedSnippet,
-		closeButton: true
-	});
-
-
+	var header = self.selectedPlugin + ' - ' + self.selectedSnippet;
+	var boxes = __getSnippetBox(header);
 
 	// var b = snippetBox.add(lx.Box, {geom:[10,10,40,40],style:{fill:'red'}});
 	// var c = b.add(lx.Box, {geom:[10,10,40,40],style:{fill:'green'}});
 	// var ee = snippetBox.getChildren(true);
 	// console.log(ee);
 
-	snippetBox.begin();
-	lx.createAndCallFunction(code);
-	snippetBox.end();
+
+	// boxes.snippetBox.begin();
+	// lx.createAndCallFunction(code);
+	// boxes.snippetBox.end();
+}
+
+#lx:tpl-function __getSnippetBox(header) {
+	<lx.ActiveBox:^snippetBox._vol>(header:header,closeButton: true)
+		<lx.Box>(geom:[10,10,40,40]).fill('red')
+		<lx.Box>(geom:[20,20,40,40]).fill('blue')
+		<lx.Box>(geom:[30,30,40,40]).fill('green')
 }
 

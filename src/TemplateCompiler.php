@@ -87,9 +87,15 @@ class TemplateCompiler
                 continue;
             }
 
+            if ($node->getLevel() == 0) {
+                $code .= "$varName.useRenderCache();";
+            }
             $code .= "$varName.begin();";
             $code .= $this->compileNodes($node->getChildren());
             $code .= "$varName.end();";
+            if ($node->getLevel() == 0) {
+                $code .= "$varName.applyRenderCache();";
+            }
         }
 
         return $code;

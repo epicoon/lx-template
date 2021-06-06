@@ -67,30 +67,12 @@ class Respondent extends \lx\Respondent
         $compiler = new JsCompiler();
         $code = $compiler->compileCode($code, $file->getPath());
         $dependencies = $compiler->getDependencies()->toArray();
-
-        $e = $this->prepareResponse([
-            'tree' => $tree->toArray(),
-            'code' => $code,
-            'dependencies' => $dependencies,
-        ]);
-        $aaa = $e->getDataString();
-
-        $aa = 1;
-
-
+        
         return $this->prepareResponse([
             'tree' => $tree->toArray(),
             'code' => $code,
             'dependencies' => $dependencies,
         ]);
-//        [
-//            'success' => true,
-//            'data' => [
-//                'tree' => $tree->toArray(),
-//                'code' => $code,
-//                'dependencies' => $dependencies,
-//            ],
-//        ];
     }
 
 

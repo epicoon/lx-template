@@ -24,7 +24,10 @@ class TemplateParser
         $this->named = [];
         $this->elements = [];
 
-        $preg = '/(^|\r|\n|\r\n)(<[\w\W]+?)(?=(\r|\n|\r\n)(\S|\s*$))/';
+        preg_match('/^(?:\r|\n|\r\n)(( |\t)*?)</', $text, $shift);
+        $shift = $shift[1];
+
+        $preg = '/(^|\r|\n|\r\n)' . $shift . '(<[\w\W]+?)(?=(\r|\n|\r\n)(\S|\s*$))/';
         preg_match_all($preg, $text, $matches);
         $blocks = $matches[2];
         foreach ($blocks as $block) {
