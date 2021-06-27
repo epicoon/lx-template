@@ -2,7 +2,7 @@
 
 namespace lx\template\tree\data;
 
-class ContentNodeData extends NodeData
+class BlockNodeData extends NodeData
 {
     private string $name;
 

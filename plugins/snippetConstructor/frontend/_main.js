@@ -6,16 +6,9 @@
 #lx:use lx.ActiveBox;
 
 #lx:require Core;
-#lx:require -R gui/;
 #lx:require -R src/;
 
-Plugin.core = new lxsc.Core(Plugin, {
-	widgets: {
-		mainMenu: new lxsc.gui.MainMenu(Plugin, Snippet->>menu),
-		pluginSelector: new lxsc.gui.PluginSelector(Plugin, Snippet->>pluginSelector)
-	}
-});
-
+Plugin.core = new lxsc.Core(Plugin);
 
 
 //!!!

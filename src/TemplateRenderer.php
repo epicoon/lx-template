@@ -36,9 +36,9 @@ class TemplateRenderer
         $children = $this->tree->getRootNode()->getChildren();
         $this->renderNodes($children, $this->code);
 
-        foreach ($this->tree->getContents() as $name => $content) {
+        foreach ($this->tree->getBlocks() as $name => $block) {
             $code = $name;
-            $this->renderNodes($content->getChildren(), $code);
+            $this->renderNodes($block->getChildren(), $code);
             $this->code .= ($this->prettyMode ? (PHP_EOL . PHP_EOL) : PHP_EOL) . $code;
         }
 

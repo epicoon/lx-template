@@ -81,9 +81,13 @@ class WidgetConfigParser extends NodeConfigParser
             ]);
             $temp = [];
             foreach ($config as $item) {
-                preg_match_all('/([^:]+?):(.+)/', $item, $matches);
-                $temp[$matches[1][0]] = $matches[2][0];
-                unset($matches);
+                if (strpos($item, ':') === false) {
+                    $temp[$item] = $item;
+                } else {
+                    preg_match_all('/([^:]+?):(.+)/', $item, $matches);
+                    $temp[$matches[1][0]] = $matches[2][0];
+                    unset($matches);
+                }
             }
             $config = $temp;
         } else {

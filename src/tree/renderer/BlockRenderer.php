@@ -4,7 +4,7 @@ namespace lx\template\tree\renderer;
 
 use lx\template\tree\TemplateNode;
 
-class ContentRenderer extends NodeRenderer
+class BlockRenderer extends NodeRenderer
 {
     protected function run(): void
     {

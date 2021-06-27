@@ -6,12 +6,12 @@ class TemplateTree
 {
     private TemplateNode $rootNode;
     /** @var array<TemplateNode> */
-    private array $contents;
+    private array $blocks;
 
-    public function __construct(TemplateNode $rootNode, array $contents)
+    public function __construct(TemplateNode $rootNode, array $blocks)
     {
         $this->rootNode = $rootNode;
-        $this->contents = $contents;
+        $this->blocks = $blocks;
     }
 
     public function getRootNode(): TemplateNode
@@ -22,21 +22,21 @@ class TemplateTree
     /**
      * @return array<TemplateNode>
      */
-    public function getContents(): array
+    public function getBlocks(): array
     {
-        return $this->contents;
+        return $this->blocks;
     }
     
     public function toArray(): array
     {
-        $contents = [];
-        foreach ($this->contents as $name => $node) {
-            $contents[$name] = $node->toArrayWithChildren();
+        $blocks = [];
+        foreach ($this->blocks as $name => $node) {
+            $blocks[$name] = $node->toArrayWithChildren();
         }
         
         return [
             'root' => $this->rootNode->toArrayWithChildren(),
-            'contents' => $contents,
+            'blocks' => $blocks,
         ];
     }
 
@@ -47,15 +47,15 @@ class TemplateTree
             return null;
         }
 
-        $contents = $array['contents'] ?? [];
+        $blocks = $array['blocks'] ?? [];
 
         $node = TemplateNode::createByArray($root);
-        foreach ($contents as $name => &$content) {
-            $content['level'] = 0;
-            $content = TemplateNode::createByArray($content);
+        foreach ($blocks as $name => &$block) {
+            $block['level'] = 0;
+            $block = TemplateNode::createByArray($block);
         }
-        unset($content);
+        unset($block);
 
-        return new self($node, $contents);
+        return new self($node, $blocks);
     }
 }

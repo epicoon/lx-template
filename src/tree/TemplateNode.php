@@ -9,7 +9,7 @@ class TemplateNode
 {
     const TYPE_COMMON = 'common';
     const TYPE_WIDGET = 'widget';
-    const TYPE_CONTENT = 'content';
+    const TYPE_BLOCK = 'block';
 
     private ?TemplateNode $parent = null;
     /** @var array<TemplateNode> */

@@ -3,16 +3,16 @@
 namespace lx\template\tree;
 
 use lx\template\TemplateCompiler;
-use lx\template\tree\compiler\ContentCompiler;
+use lx\template\tree\compiler\BlockCompiler;
 use lx\template\tree\compiler\NodeCompiler;
 use lx\template\tree\compiler\WidgetCompiler;
 use lx\template\tree\data\NodeData;
 use lx\template\tree\data\WidgetNodeData;
-use lx\template\tree\data\ContentNodeData;
+use lx\template\tree\data\BlockNodeData;
 use lx\template\tree\parser\NodeConfigParser;
 use lx\template\tree\parser\WidgetConfigParser;
-use lx\template\tree\parser\ContentConfigParser;
-use lx\template\tree\renderer\ContentRenderer;
+use lx\template\tree\parser\BlockConfigParser;
+use lx\template\tree\renderer\BlockRenderer;
 use lx\template\tree\renderer\NodeRenderer;
 use lx\template\tree\renderer\WidgetRenderer;
 
@@ -26,7 +26,7 @@ class Factory
         }
         
         if (preg_match('/^<#/', $widget)) {
-            return TemplateNode::TYPE_CONTENT;
+            return TemplateNode::TYPE_BLOCK;
         }
         
         return TemplateNode::TYPE_WIDGET;
@@ -36,7 +36,7 @@ class Factory
     {
         switch ($type) {
             case TemplateNode::TYPE_WIDGET: return new WidgetConfigParser();
-            case TemplateNode::TYPE_CONTENT: return new ContentConfigParser();
+            case TemplateNode::TYPE_BLOCK: return new BlockConfigParser();
         }
         return null;
     }
@@ -45,7 +45,7 @@ class Factory
     {
         switch ($type) {
             case TemplateNode::TYPE_WIDGET: return new WidgetNodeData();
-            case TemplateNode::TYPE_CONTENT: return new ContentNodeData();
+            case TemplateNode::TYPE_BLOCK: return new BlockNodeData();
         }
         return null;
     }
@@ -54,7 +54,7 @@ class Factory
     {
         switch ($type) {
             case TemplateNode::TYPE_WIDGET: return new WidgetRenderer();
-            case TemplateNode::TYPE_CONTENT: return new ContentRenderer();
+            case TemplateNode::TYPE_BLOCK: return new BlockRenderer();
         }
         return null;
     }
@@ -63,7 +63,7 @@ class Factory
     {
         switch ($type) {
             case TemplateNode::TYPE_WIDGET: return new WidgetCompiler($compiler);
-            case TemplateNode::TYPE_CONTENT: return new ContentCompiler($compiler);
+            case TemplateNode::TYPE_BLOCK: return new BlockCompiler($compiler);
         }
         return null;
     }

@@ -1,13 +1,16 @@
 #lx:private;
 
-class Core #lx:namespace lxsc {
-	constructor(plugin, config) {
-		this.plugin = plugin;
-		this.widgets = config.widgets;
+#lx:require -R gui/;
 
+class Core #lx:namespace lxsc {
+	constructor(plugin) {
+		this.plugin = plugin;
 		this.selectedPlugin = null;
 		this.selectedSnippet = null;
 
+		this.renderer = new lxsc.gui.GuiRenderer();
+
+		__initWidgets(this);
 		__initEventListeners(this);
 	}
 
@@ -21,6 +24,13 @@ class Core #lx:namespace lxsc {
  * CORE EVENTS
  **********************************************************************************************************************/
 
+function __initWidgets(self) {
+	self.widgets = {
+		mainMenu: new lxsc.gui.MainMenu(self.plugin, self.plugin->>menu),
+		pluginSelector: new lxsc.gui.PluginSelector(self.plugin, self.plugin->>pluginSelector)
+	};
+}
+
 function __initEventListeners(self) {
 	self.plugin.on('e-pluginSelected', __onPluginSelected.bind(self));
 	self.plugin.on('e-snippetSelected', __onSnippetSelected.bind(self));
@@ -32,10 +42,7 @@ function __onPluginSelected(event) {
 			lx.Tost.error(res.data);
 			return;
 		}
-
-		console.log('__onPluginSelected');
-		console.log(res);
-
+		
 		this.selectedPlugin = event.data.pluginName;
 		this.widgets.mainMenu.setPlugin(event.data.pluginName);
 		this.widgets.mainMenu.setSnippetsList(res.data);
@@ -43,8 +50,6 @@ function __onPluginSelected(event) {
 }
 
 function __onSnippetSelected(event) {
-	console.log('__onSnippetSelected');	
-
 	^Respondent.getSnippetData(this.selectedPlugin, event.data.snippetPath).then(res=>{
 		if (res.success === false) {
 			lx.Tost.error(res.data);
@@ -57,33 +62,40 @@ function __onSnippetSelected(event) {
 }
 
 function __processSnippetData(self, data) {
+	console.log('__processSnippetData');
 	console.log(data);
 
 	lx.dependencies.promiseModules(
-		data.dependencies.modules,
+		data.dependencies.modules || [],
 		()=>__renderSnippet(self, data.code, data.tree)
 	)
 }
 
 function __renderSnippet(self, code, tree) {
 	var header = self.selectedPlugin + ' - ' + self.selectedSnippet;
-	var boxes = __getSnippetBox(header);
+	var boxes = self.renderer.getSnippetBox(header);
 
-	// var b = snippetBox.add(lx.Box, {geom:[10,10,40,40],style:{fill:'red'}});
-	// var c = b.add(lx.Box, {geom:[10,10,40,40],style:{fill:'green'}});
-	// var ee = snippetBox.getChildren(true);
-	// console.log(ee);
+	boxes.snippetBox->>workField.begin();
+	lx.createAndCallFunction(code);
+	boxes.snippetBox->>workField.end();
 
 
-	// boxes.snippetBox.begin();
-	// lx.createAndCallFunction(code);
-	// boxes.snippetBox.end();
+
+	console.log('__renderSnippet');
+	console.log(tree);
+
+
+	lx.Tree.uCreateFromObject(
+		tree.root,
+		'children',
+		function(obj, node) {
+
+			console.log(obj, node);
+
+		}
+	);
+
+
+
+
 }
-
-#lx:tpl-function __getSnippetBox(header) {
-	<lx.ActiveBox:^snippetBox._vol>(header:header,closeButton: true)
-		<lx.Box>(geom:[10,10,40,40]).fill('red')
-		<lx.Box>(geom:[20,20,40,40]).fill('blue')
-		<lx.Box>(geom:[30,30,40,40]).fill('green')
-}
-

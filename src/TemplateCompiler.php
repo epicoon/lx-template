@@ -40,14 +40,14 @@ class TemplateCompiler
             ? "const $outputName=(()=>{let __out__=new lx.HashMap();"
             : '(()=>{';
 
-        $contentFuncs = '';
-        foreach ($this->tree->getContents() as $contentName => $content) {
+        $blockFuncs = '';
+        foreach ($this->tree->getBlocks() as $blockName => $block) {
             $funcName = '_f' . $this->funcCounter++;
-            $this->funcMap[$contentName] = $funcName;
+            $this->funcMap[$blockName] = $funcName;
             $funcCode = "function $funcName(){";
-            $funcCode .= $this->compileNodes($content->getChildren());
+            $funcCode .= $this->compileNodes($block->getChildren());
             $funcCode .= "}";
-            $contentFuncs .= $funcCode;
+            $blockFuncs .= $funcCode;
         }
 
         $children = $this->tree->getRootNode()->getChildren();
@@ -59,7 +59,7 @@ class TemplateCompiler
             : '})();';
 
         $useWidgets = $this->getUseWidgets();
-        $this->code = "$useWidgets$codeStart$contentFuncs$code$codeEnd";
+        $this->code = "$useWidgets$codeStart$blockFuncs$code$codeEnd";
         return $this->code;
     }
 
@@ -71,7 +71,7 @@ class TemplateCompiler
     {
         $code = '';
         foreach ($nodes as $node) {
-            if ($node->isType(TemplateNode::TYPE_CONTENT)) {
+            if ($node->isType(TemplateNode::TYPE_BLOCK)) {
                 $def = $node->toArray();
                 $name = $def['name'];
                 $func = $this->funcMap[$name];

@@ -29,6 +29,17 @@ class JsCompiler extends JsCompilerExtension
             return $code;
         }, $code);
 
+        $reg = '/#lx:tpl-method\s+?[^{]+?(?P<re>{((?>[^{}]+)|(?P>re))*})/';
+        $code = preg_replace_callback($reg, function ($matches) {
+            $tpl = trim($matches['re'], '{}');
+            $result = $this->compile($tpl, 'result') . 'return result;';
+
+            $code = $matches[0];
+            $code = preg_replace('/^#lx:tpl-method/', '', $code);
+            $code = str_replace($tpl, $result, $code);
+            return $code;
+        }, $code);
+
         $reg = '/#lx:tpl-import ([^ ;]+?)(?: as (\b.+?\b))?;/';
         $parentDir = $filePath === null ? null : dirname($filePath) . '/';
         $code = preg_replace_callback($reg, function ($matches) use ($parentDir) {
