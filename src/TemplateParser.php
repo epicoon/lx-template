@@ -2,15 +2,16 @@
 
 namespace lx\template;
 
+use lx\FlightRecorderHolderInterface;
+use lx\FlightRecorderHolderTrait;
 use lx\template\tree\TemplateTree;
 use lx\Vector;
 use lx\StringHelper;
-use lx\ErrorCollectorTrait;
 use lx\template\tree\TemplateNode;
 
-class TemplateParser
+class TemplateParser implements FlightRecorderHolderInterface
 {
-    use ErrorCollectorTrait;
+    use FlightRecorderHolderTrait;
 
     private TemplateNode $rootNode;
     private array $blocks = [];
@@ -48,7 +49,7 @@ class TemplateParser
             $this->processNamed();
             $this->processElements();
         } catch (\Exception $exception) {
-            $this->addError($exception->getMessage());
+            $this->addFlightRecord($exception->getMessage());
             return null;
         }
 

@@ -69,10 +69,10 @@ class JsCompiler extends JsCompilerExtension
     {
         $parser = new TemplateParser();
         $tree = $parser->parse($text);
-        if ($parser->hasErrors()) {
+        if ($parser->hasFlightRecords()) {
             \lx::devLog(['_'=>[__FILE__,__CLASS__,__METHOD__,__LINE__],
                 '__trace__' => debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT&DEBUG_BACKTRACE_IGNORE_ARGS),
-                'msg' => $parser->getFirstError(),
+                'msg' => $parser->getFirstFlightRecord(),
                 'origin_class' => static::class,
             ]);
             return '';

@@ -59,8 +59,8 @@ class Respondent extends \lx\Respondent
         $text = $file->get();
         $parser = new TemplateParser();
         $tree = $parser->parse($text);
-        if ($parser->hasErrors()) {
-            return $this->prepareWarningResponse($parser->getFirstError());
+        if ($parser->hasFlightRecords()) {
+            return $this->prepareWarningResponse($parser->getFirstFlightRecord());
         }
 
         $code = "#lx:tpl-begin;$text#lx:tpl-end;";
