@@ -76,7 +76,7 @@ function __renderSnippet(self, code, tree) {
 	var boxes = self.renderer.getSnippetBox(header);
 
 	boxes.snippetBox->>workField.begin();
-	lx.createAndCallFunction(code);
+	lx._f.createAndCallFunction(code);
 	boxes.snippetBox->>workField.end();
 
 
