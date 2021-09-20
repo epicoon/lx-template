@@ -24,7 +24,7 @@ class GridField #lx:namespace lxsc {
 		this.map = [];
 		__buildBox(this);
 		this.elem.box.on('resize', ()=>{
-			this.elemCollection.each(el=>el.actualizeGeom());
+			this.elemCollection.forEach(el=>el.actualizeGeom());
 		});
 	}
 
@@ -34,7 +34,7 @@ class GridField #lx:namespace lxsc {
 
 	getElems(x, y) {
 		var matches = [];
-		this.elemCollection.each(elem=>{
+		this.elemCollection.forEach(elem=>{
 			if (
 				elem.positioning.x0 <= x
 				&& elem.positioning.x1 >= x

@@ -11,7 +11,7 @@ class ElementsCollection #lx:namespace lxsc {
 		this.list.remove(elem);
 	}
 
-	each(func) {
-		this.list.each(func);
+	forEach(func) {
+		this.list.forEach(func);
 	}
 }
