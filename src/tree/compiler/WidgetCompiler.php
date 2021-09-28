@@ -20,11 +20,14 @@ class WidgetCompiler extends NodeCompiler
     private function getInitCode(array $def): string
     {
         $init = "new {$def['widget']}(";
-        if ($def['key'] || $def['volume'] || !empty($def['css']) || !empty($def['config'])) {
+        if ($def['key'] || $def['field'] || $def['volume'] || !empty($def['css']) || !empty($def['config'])) {
             $init .= '{';
             $config = [];
             if ($def['key']) {
                 $config[] = "key:'{$def['key']}'";
+            }
+            if ($def['field']) {
+                $config[] = "field:'{$def['field']}'";
             }
             if ($def['volume'] && !array_key_exists('geom', $def['config'])) {
                 $config[] = 'geom:true';

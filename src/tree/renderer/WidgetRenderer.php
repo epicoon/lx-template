@@ -19,6 +19,8 @@ class WidgetRenderer extends NodeRenderer
             $widget .= '@' . $def['key'];
         } elseif ($def['var']) {
             $widget .= '^' . $def['var'];
+        } elseif ($def['field']) {
+            $widget .= '{f}' . $def['field'];
         }
         if ($def['volume']) {
             $widget .= '._vol';

@@ -9,6 +9,7 @@ class WidgetNodeData extends NodeData
     private string $widget = '';
     private ?string $key = null;
     private ?string $var = null;
+    private ?string $field = null;
     private array $css = [];
     private bool $isVolume = false;
     private array $config = [];
@@ -19,6 +20,7 @@ class WidgetNodeData extends NodeData
         $this->widget = $data['widget'];
         $this->key = $data['key'];
         $this->var = $data['var'];
+        $this->field = $data['field'];
         $this->css = $data['css'];
         $this->isVolume = $data['volume'];
         $this->config = $data['config'];
@@ -54,6 +56,7 @@ class WidgetNodeData extends NodeData
             'widget' => $this->widget,
             'key' => $this->key,
             'var' => $this->var,
+            'field' => $this->field,
             'css' => $this->css,
             'volume' => $this->isVolume,
             'config' => $this->config,

@@ -15,11 +15,12 @@ class WidgetConfigParser extends NodeConfigParser
         $modif = $config['modif'] ?? [];
 
         $type = trim($type, '<>');
-        $preg = '/^(.+?)(?:\:|$)((?:@|\^)[^\.]+)?(.+|$)/';
+        $preg = '/^(.+?)(?:\:|$)((?:@|\^|{(?:[^}]+?)})[^\.]+)?(.+|$)/';
         preg_match_all($preg, $type, $matches);
 
         $widget = $matches[1][0];
         $var = null;
+        $field = null;
         $key = ($matches[2][0] == '')
             ? null
             : $matches[2][0];
@@ -30,6 +31,14 @@ class WidgetConfigParser extends NodeConfigParser
             } elseif ($key[0] == '^') {
                 $var = trim($key, '^');
                 $key = null;
+            } elseif ($key[0] == '{') {
+                if (preg_match('/^{(f|field)}/', $key)) {
+                    $field = preg_replace('/^{(f|field)}/', '', $key);
+                    $var = $field;
+                    $key = null;
+                } else {
+                    $key = null;
+                }
             } else {
                 $key = null;
             }
@@ -55,6 +64,7 @@ class WidgetConfigParser extends NodeConfigParser
         $result = [
             'widget' => $widget,
             'key' => $key,
+            'field' => $field,
             'var' => $var,
             'css' => $css,
             'volume' => $isVolume,
