@@ -37,7 +37,7 @@ class TemplateCompiler
         $this->withOutput = ($outputName != '');
 
         $codeStart = ($this->withOutput)
-            ? "const $outputName=(()=>{let __out__=new lx.HashMap();"
+            ? "const $outputName=(()=>{let __out__={};"
             : '(()=>{';
 
         $blockFuncs = '';
@@ -55,7 +55,7 @@ class TemplateCompiler
 
 
         $codeEnd = ($this->withOutput)
-            ? "return __out__.toObject();})();"
+            ? "return __out__;})();"
             : '})();';
 
         $useWidgets = $this->getUseWidgets();
@@ -109,7 +109,7 @@ class TemplateCompiler
         $def = $node->toArray();
         $this->registerWidget($def['widget']);
         if ($this->withOutput && $def['var']) {
-            $nodeCode .= "__out__.add('{$def['var']}',$varName);";
+            $nodeCode .= "__out__['{$def['var']}']=$varName;";
         }
 
         return $nodeCode;
