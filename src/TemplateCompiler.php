@@ -109,7 +109,9 @@ class TemplateCompiler
         $def = $node->toArray();
         $this->registerWidget($def['widget']);
         if ($this->withOutput && $def['var']) {
-            $nodeCode .= "__out__['{$def['var']}']=$varName;";
+            $nodeCode .= "if(!('".$def['var']."' in __out__)){__out__['{$def['var']}']=$varName;}else{"
+                ."if(!lx.isArray(__out__['{$def['var']}']))__out__['{$def['var']}']=[__out__['{$def['var']}']];"
+                ."__out__['{$def['var']}'].push($varName)}";
         }
 
         return $nodeCode;

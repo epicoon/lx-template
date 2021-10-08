@@ -2,6 +2,7 @@
 
 namespace lx\template\plugins\snippetConstructor\backend;
 
+use lx;
 use lx\File;
 use lx\JsCompiler;
 use lx\PackageBrowser;
@@ -35,7 +36,7 @@ class Respondent extends \lx\Respondent
 
     public function getPluginData(string $pluginName): ResponseInterface
     {
-        $plugin = $this->app->getPlugin($pluginName);
+        $plugin = lx::$app->getPlugin($pluginName);
         if (!$plugin) {
             return $this->prepareWarningResponse("Plugin $pluginName not found");
         }
@@ -46,7 +47,7 @@ class Respondent extends \lx\Respondent
 
     public function getSnippetData(string $pluginName, string $snippetPath): ResponseInterface
     {
-        $plugin = $this->app->getPlugin($pluginName);
+        $plugin = lx::$app->getPlugin($pluginName);
         if (!$plugin) {
             return $this->prepareWarningResponse("Plugin $pluginName not found");
         }
