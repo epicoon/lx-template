@@ -1,5 +1,3 @@
-#lx:private;
-
 class GridField #lx:namespace lxsc {
 	constructor(elem, config = null) {
 		this.elem = elem;

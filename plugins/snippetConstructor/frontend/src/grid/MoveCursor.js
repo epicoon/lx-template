@@ -1,5 +1,3 @@
-#lx:private;
-
 class MoveCursor #lx:namespace lxsc {
 	constructor(grid, elem) {
 		this.grid = grid;

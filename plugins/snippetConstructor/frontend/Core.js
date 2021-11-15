@@ -1,5 +1,3 @@
-#lx:private;
-
 #lx:require -R gui/;
 
 class Core #lx:namespace lxsc {
