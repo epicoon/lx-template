@@ -1,4 +1,4 @@
-#lx:require @core/js/classes/css/CssContext;
+#lx:use lx.CssContext;
 
 var cssList = new lx.CssContext();
 
