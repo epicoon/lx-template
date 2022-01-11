@@ -1,5 +1,3 @@
-#lx:use lx.CssContext;
-
 var cssList = new lx.CssContext();
 
 
