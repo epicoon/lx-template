@@ -1,6 +1,6 @@
 <?php
 
-namespace lx\template\plugins\snippetConstructor\backend;
+namespace lx\template\plugins\snippetConstructor\server;
 
 use lx;
 use lx\File;

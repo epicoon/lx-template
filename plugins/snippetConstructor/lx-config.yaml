@@ -1,14 +1,12 @@
-class: lx\template\plugins\snippetConstructor\Plugin
+server: lx\template\plugins\snippetConstructor\server\Plugin
+client: client/Plugin.js
+
+respondents:
+  Respondent: Respondent
 
 rootSnippet: snippets/_root.js
 snippets: snippets
 
-jsMain: frontend/_main.js
-
 images: assets/images
-css: assets/css
 
 cacheType: smart
-
-respondents:
-  Respondent: backend\Respondent
