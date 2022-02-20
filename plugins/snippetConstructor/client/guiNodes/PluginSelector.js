@@ -1,8 +1,7 @@
-class PluginSelector extends lxsc.gui.Widget #lx:namespace lxsc.gui {
-	open(data) {
-		console.log('Open plugin selector');
-		console.log(data);
+class PluginSelector extends lx.GuiNode #lx:namespace lxsc.gui {
+	get box() { return this.getWidget(); }
 
+	open(data) {
 		this.box.show();
 		var tree = lx.Tree.createFromObject(data);
 		this.box->tree.setData(tree);
@@ -25,7 +24,7 @@ class PluginSelector extends lxsc.gui.Widget #lx:namespace lxsc.gui {
 				leaf->label.click(()=>{
 					let pluginName = node.root.data.key + ':' + node.data.value;
 					this.close();
-					this.triggerCoreEvent('e-pluginSelected', {pluginName});
+					this.getPlugin().core.selectPlugin(pluginName);
 				});
 			}
 		});

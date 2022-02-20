@@ -10,10 +10,53 @@
 
 class Plugin extends lx.Plugin {
     initCssAsset(css) {
-        css.addClass('lxsc-current-plugin', {
+        // Work boxes
+        css.addClass('lxsc-worktree', {
+            backgroundColor: css.preset.altBodyBackgroundColor
+        });
+        css.addClass('lxsc-workpanel', {
+            backgroundColor: css.preset.altBodyBackgroundColor
+        });
+        css.addClass('lxsc-snippetmark', {
+            '@ellipsis': true,
+            cursor: 'pointer',
+            backgroundColor: css.preset.altMainBackgroundColor,
+            borderTop: '1px solid ' + css.preset.widgetBorderColor,
+            borderLeft: '1px solid ' + css.preset.widgetBorderColor,
+            borderRight: '1px solid ' + css.preset.widgetBorderColor,
+            borderTopLeftRadius: css.preset.borderRadius,
+            borderTopRightRadius: css.preset.borderRadius
+        });
+        css.addClass('lxsc-snippet-selected', {
+            backgroundColor: css.preset.checkedDeepColor
+        });
+        css.addClass('lxsc-snippet-container', {
+            backgroundColor: css.preset.mainBackgroundColor
+        });
+
+        // Current plugin
+        css.addClass('lxsc-current-plugin-wrapper', {
             cursor: 'pointer',
             backgroundColor: css.preset.bodyBackgroundColor
         });
+        css.addClass('lxsc-current-plugin-lbl', {
+            backgroundColor: css.preset.altBodyBackgroundColor,
+            display: 'block',
+            float: 'left',
+            paddingLeft: '10px',
+            paddingRight: '10px'
+        });
+        css.addClass('lxsc-current-plugin', {
+            display: 'block',
+            paddingLeft: '10px',
+            overflow: 'hidden',
+        });
+
+        css.addClass('lxsc-snippets-lbl', {
+            cursor: 'pointer'
+        });
+        
+        // Misc
         css.addClass('lxsc-hlgc', {
             opacity: 0.66
         }, {
@@ -41,11 +84,13 @@ class Plugin extends lx.Plugin {
     run() {
         this.core = new lxsc.Core(this);
 
+
+
         //!!!
         //TODO баг - если предварительно не открыть три-виджет, будет хрень с отображением дерева
-        this.root.child(0).open();
+        // this.root.child(0).open();
 
-        this.core.trigger('e-pluginSelected', {pluginName:'lx/help:test'});
+        // this.core.trigger('e-pluginSelected', {pluginName:'lx/help:test'});
     }
 }
 

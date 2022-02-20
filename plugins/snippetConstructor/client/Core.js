@@ -1,99 +1,97 @@
-#lx:require -R gui/;
+#lx:require -R guiNodes/;
+#lx:require -R guiTools/;
 
 class Core #lx:namespace lxsc {
 	constructor(plugin) {
 		this.plugin = plugin;
 		this.selectedPlugin = null;
 		this.selectedSnippet = null;
+		this.snippets = {};
 
 		this.renderer = new lxsc.gui.GuiRenderer();
 
-		__initWidgets(this);
-		__initEventListeners(this);
+		this.plugin.initGuiNodes({
+			pluginDisplayer: lxsc.gui.PluginDisplayer,
+			pluginSelector: lxsc.gui.PluginSelector,
+			snippetsAgregator: lxsc.gui.SnippetsAgregator
+		});
+
+		this.widgetHighlighter = new lxsc.gui.WidgetHighlighter(this);
 	}
 
 	trigger(eventName, data) {
 		this.plugin.trigger(eventName, data);
 	}
-}
+	
+	selectPlugin(pluginName) {
+		^Respondent.getPluginData(pluginName).then(res=>{
+			if (res.success === false) {
+				lx.Tost.error(res.data);
+				return;
+			}
 
+			this.selectedPlugin = pluginName;
+			this.trigger('e-pluginSelected', {pluginName, pluginData: res.data});
+		});
+	}
 
-/***********************************************************************************************************************
- * CORE EVENTS
- **********************************************************************************************************************/
-
-function __initWidgets(self) {
-	self.widgets = {
-		mainMenu: new lxsc.gui.MainMenu(self.plugin, self.plugin->>menu),
-		pluginSelector: new lxsc.gui.PluginSelector(self.plugin, self.plugin->>pluginSelector)
-	};
-}
-
-function __initEventListeners(self) {
-	self.plugin.on('e-pluginSelected', __onPluginSelected.bind(self));
-	self.plugin.on('e-snippetSelected', __onSnippetSelected.bind(self));
-}
-
-function __onPluginSelected(event) {
-	^Respondent.getPluginData(event.data.pluginName).then(res=>{
-		if (res.success === false) {
-			lx.Tost.error(res.data);
-			return;
-		}
-		
-		this.selectedPlugin = event.data.pluginName;
-		this.widgets.mainMenu.setPlugin(event.data.pluginName);
-		this.widgets.mainMenu.setSnippetsList(res.data);
-	});
-}
-
-function __onSnippetSelected(event) {
-	^Respondent.getSnippetData(this.selectedPlugin, event.data.snippetPath).then(res=>{
-		if (res.success === false) {
-			lx.Tost.error(res.data);
+	loadSnippet(snippetPath) {
+		if (this.getSnippetKey(this.selectedPlugin, snippetPath) in this.snippets) {
+			this.selectSnippet(this.selectedPlugin, snippetPath);
 			return;
 		}
 
-		this.selectedSnippet = event.data.snippetPath;
-		__processSnippetData(this, res.data);
-	});
+		^Respondent.getSnippetData(this.selectedPlugin, snippetPath).then(res=>{
+			if (res.success === false) {
+				lx.Tost.error(res.data);
+				return;
+			}
+
+			__addSnippet(this, this.selectedPlugin, snippetPath, res.data);
+		});
+	}
+
+	selectSnippet(pluginName, snippetPath) {
+		if (this.selectedPlugin == pluginName && this.selectedSnippet == snippetPath)
+			return;
+		this.selectedPlugin = pluginName;
+		this.selectedSnippet = snippetPath;
+		this.plugin.trigger('e-snippetSelected', {
+			selectedPlugin: pluginName,
+			selectedSnippet: snippetPath
+		});
+	}
+
+	getSnippetKey(pluginName, snippetPath) {
+		return pluginName + '__' + snippetPath;
+	}
+
+	getSnippetInfo(pluginName, snippetPath) {
+		return this.snippets[this.getSnippetKey(pluginName, snippetPath)];
+	}
 }
 
-function __processSnippetData(self, data) {
-	console.log('__processSnippetData');
-	console.log(data);
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * PRIVATE
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+function __addSnippet(self, pluginName, snippetPath, snippetData) {
 	lx.dependencies.promiseModules(
-		data.dependencies.modules || [],
-		()=>__renderSnippet(self, data.code, data.tree)
-	)
-}
-
-function __renderSnippet(self, code, tree) {
-	var header = self.selectedPlugin + ' - ' + self.selectedSnippet;
-	var boxes = self.renderer.getSnippetBox(header);
-
-	boxes.snippetBox->>workField.begin();
-	lx._f.createAndCallFunction(code);
-	boxes.snippetBox->>workField.end();
-
-
-
-	console.log('__renderSnippet');
-	console.log(tree);
-
-
-	lx.Tree.uCreateFromObject(
-		tree.root,
-		'children',
-		function(obj, node) {
-
-			console.log(obj, node);
-
+		snippetData.dependencies.modules || [],
+		()=>{
+			let snippetKey = self.getSnippetKey(pluginName, snippetPath);
+			self.snippets[snippetKey] = {
+				plugin: pluginName,
+				snippet: snippetPath,
+				content: snippetData.tree
+			};
+			self.plugin.trigger('e-snippetAdded', {
+				snippetKey,
+				snippetCode: snippetData.code,
+				images: snippetData.images
+			});
+			self.selectSnippet(pluginName, snippetPath);
 		}
-	);
-
-
-
-
+	)
 }
