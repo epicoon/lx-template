@@ -31,6 +31,7 @@ class TemplateParser implements FlightRecorderHolderInterface
             $text = preg_replace('/(^|\r|\n|\r\n)' . $shift . '/', '$1', $text);
         }
 
+        $text = preg_replace('/(\r\n|\r|\n)/', PHP_EOL, $text);
         $text .= PHP_EOL;
         $preg = '/(^|\r|\n|\r\n)(<[\w\W]+?)(?=(\r|\n|\r\n)(\S|\s*$))/';
         preg_match_all($preg, $text, $matches);
