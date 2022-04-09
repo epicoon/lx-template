@@ -1,6 +1,7 @@
 #lx:use lx.Color;
 
-class GridField #lx:namespace lxsc {
+#lx:namespace lxsc;
+class GridField {
 	constructor(elem, config = null) {
 		this.elem = elem;
 		this.elemCollection = new lxsc.ElementsCollection();

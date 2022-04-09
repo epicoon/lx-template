@@ -119,7 +119,7 @@ class TemplateCompiler
 
     private function registerWidget($widget)
     {
-        if (in_array($widget, ['lx.Rect', 'lx.Box', 'lx.Input', 'lx.TextBox', 'lx.Textarea'])
+        if (in_array($widget, ['lx.Rect', 'lx.Box', 'lx.TextBox'])
             || in_array($widget, $this->widgets)) {
             return;
         }

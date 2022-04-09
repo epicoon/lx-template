@@ -1,7 +1,9 @@
-#lx:require -R guiNodes/;
+#lx:require dataStructures/;
+#lx:require guiNodes/;
 #lx:require -R guiTools/;
 
-class Core #lx:namespace lxsc {
+#lx:namespace lxsc;
+class Core {
 	constructor(plugin) {
 		this.plugin = plugin;
 		this.selectedPlugin = null;
@@ -69,6 +71,11 @@ class Core #lx:namespace lxsc {
 	getSnippetInfo(pluginName, snippetPath) {
 		return this.snippets[this.getSnippetKey(pluginName, snippetPath)];
 	}
+	
+	getSelectedSnippetInfo() {
+		if (!this.selectedPlugin || !this.selectedSnippet) return null;
+		return this.getSnippetInfo(this.selectedPlugin, this.selectedSnippet);
+	}
 }
 
 
@@ -84,7 +91,7 @@ function __addSnippet(self, pluginName, snippetPath, snippetData) {
 			self.snippets[snippetKey] = {
 				plugin: pluginName,
 				snippet: snippetPath,
-				content: snippetData.tree
+				content: new lxsc.ContentMap(snippetData.tree)
 			};
 			self.plugin.trigger('e-snippetAdded', {
 				snippetKey,

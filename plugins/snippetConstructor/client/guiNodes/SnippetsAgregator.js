@@ -1,4 +1,5 @@
-class SnippetsAgregator extends lx.GuiNode #lx:namespace lxsc.gui {
+#lx:namespace lxsc.gui;
+class SnippetsAgregator extends lx.GuiNode {
     init() {
         this.selected = {
             mark: null,
@@ -76,6 +77,8 @@ function __addSnippet(self, snippetKey, snippetCode, images) {
     lx._f.createAndCallFunction(snippetCode);
     snippetBox.end();
     wrapper.hide();
+
+    snippetInfo.rootBox = snippetBox;
 
     self.marks[snippetKey] = mark;
     self.boxes[snippetKey] = wrapper;

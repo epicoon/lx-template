@@ -1,4 +1,5 @@
-class MoveCursor #lx:namespace lxsc {
+#lx:namespace lxsc;
+class MoveCursor {
 	constructor(grid, elem) {
 		this.grid = grid;
 		this.elem = elem;

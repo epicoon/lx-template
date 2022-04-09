@@ -1,4 +1,5 @@
-class Positioning #lx:namespace lxsc {
+#lx:namespace lxsc;
+class Positioning {
 	constructor() {
 		this.elem = null;
 	}

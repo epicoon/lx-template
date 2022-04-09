@@ -1,6 +1,9 @@
+#lx:require -R PluginDisplayer/;
+
 let _showSnippets = true;
 
-class PluginDisplayer extends lx.GuiNode #lx:namespace lxsc.gui {
+#lx:namespace lxsc.gui;
+class PluginDisplayer extends lx.GuiNode {
     get box() { return this.getWidget(); }
 
     setPlugin(pluginName) {
@@ -41,30 +44,8 @@ class PluginDisplayer extends lx.GuiNode #lx:namespace lxsc.gui {
         });
 
         // Структура выбранного сниппета
-        this.box->>contentTree.setLeafConstructor(leaf=>{
-
-            leaf->label.text( leaf.node.data.type );
-            leaf->label.click(()=>{
-                console.log( leaf.node );
-            });
-            leaf->label.on('mouseover', e=>{
-                if (e.target !== leaf->label.getDomElem()) return;
-
-                console.log('mouseover');
-                console.log(e);
-                console.log(e.target);
-                e.stopPropagation();
-                this.getPlugin().trigger('e-widgetOver', {node: leaf.node})
-            });
-            leaf->label.on('mouseout', e=>{
-                if (e.target !== leaf->label.getDomElem()) return;
-
-                console.log('mouseout');
-                console.log(e.target);
-                e.stopPropagation();
-                this.getPlugin().trigger('e-widgetOut', {node: leaf.node})
-            });
-        });
+        new ContentTreeDisplayer(this);
+        new BlocksTreeDisplayer(this);
     }
 
     subscribeEvents() {
@@ -86,16 +67,6 @@ class PluginDisplayer extends lx.GuiNode #lx:namespace lxsc.gui {
 
 function __onSelectSnippet(self, selectedPlugin, selectedSnippet) {
     const snippetInfo = self.getPlugin().core.getSnippetInfo(selectedPlugin, selectedSnippet);
-
-    console.log(snippetInfo);
-
-    const tree = lx.Tree.uCreateFromObject(
-        snippetInfo.content.root,
-    	'children',
-    	(obj, node) => node.data = obj
-    );
-
-    console.log(tree);
-
-    self.box->>contentTree.setData(tree);
+    self.box->>contentTree.setData(snippetInfo.content.getRoot());
+    self.box->>blocksTree.setData(snippetInfo.content.getBlocks());
 }

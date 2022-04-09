@@ -32,6 +32,9 @@
 		<lx.Box>(text:'Content').align(lx.CENTER, lx.MIDDLE)
 		<lx.Box:@contentWrapper>(minHeight:0, height:0)
 			<lx.TreeBox:@contentTree>(width:'100%')
+		<lx.Box>(text:'Blocks').align(lx.CENTER, lx.MIDDLE)
+		<lx.Box:@blocksWrapper>(minHeight:0, height:0)
+			<lx.TreeBox:@blocksTree>(width:'100%')
 <lx.Box:.lxsc-workpanel>(geom:[0,80,80,20])
 #lx:tpl-end;
 

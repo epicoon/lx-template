@@ -1,4 +1,5 @@
-class GridPositioning extends lxsc.Positioning #lx:namespace lxsc {
+#lx:namespace lxsc;
+class GridPositioning extends lxsc.Positioning {
 	constructor(grid, x0, y0, x1, y1) {
 		super();
 		this.grid = grid;

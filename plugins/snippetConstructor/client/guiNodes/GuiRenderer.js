@@ -1,4 +1,5 @@
-class GuiRenderer #lx:namespace lxsc.gui {
+#lx:namespace lxsc.gui;
+class GuiRenderer {
     getSnippetBox(header) {
         var boxes = this.__renderSnippetBox(header);
 

@@ -1,4 +1,5 @@
-class Element #lx:namespace lxsc {
+#lx:namespace lxsc;
+class Element {
 	#lx:const
 		IS_NOT_CONTAINER = 0,
 		GRID_CONTAINER = 1;

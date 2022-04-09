@@ -1,4 +1,5 @@
-class PluginSelector extends lx.GuiNode #lx:namespace lxsc.gui {
+#lx:namespace lxsc.gui;
+class PluginSelector extends lx.GuiNode {
 	get box() { return this.getWidget(); }
 
 	open(data) {

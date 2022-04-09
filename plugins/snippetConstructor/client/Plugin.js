@@ -79,6 +79,23 @@ class Plugin extends lx.Plugin {
         css.addClass('lxsc-movecursor', {
             border: 'dotted blue 2px'
         });
+
+        css.addClass('lxsc-higlighted-box', {
+            border: '2px dashed ' + css.preset.hotLightColor,
+            zIndex: 1000
+        }, {
+            before: {
+                content: '\'\'',
+                display: 'block',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                opacity: 0.5,
+                backgroundColor: css.preset.checkedLightColor
+            }
+        });
     }
 
     run() {

@@ -1,4 +1,5 @@
-class ElementsCollection #lx:namespace lxsc {
+#lx:namespace lxsc;
+class ElementsCollection {
 	constructor() {
 		this.list = [];
 	}

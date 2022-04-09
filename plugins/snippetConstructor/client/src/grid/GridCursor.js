@@ -1,4 +1,5 @@
-class GridCursor #lx:namespace lxsc {
+#lx:namespace lxsc;
+class GridCursor {
 	#lx:const
 		MODE_NONE = 0,
 		MODE_SELECT = 1;
