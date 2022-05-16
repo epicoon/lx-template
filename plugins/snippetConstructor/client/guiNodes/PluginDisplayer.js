@@ -15,6 +15,12 @@ class PluginDisplayer extends lx.GuiNode {
         this.box->>snippetsTree.setData(tree);
     }
 
+    init() {
+        // Структура выбранного сниппета
+        this.contentTreeDisplayer = new ContentTreeDisplayer(this);
+        this.blocksTreeDisplayer = new BlocksTreeDisplayer(this);
+    }
+
     initHandlers() {
         // Выбор редактируемого плагина
         this.box->>pluginChanger.click(()=>{
@@ -42,10 +48,6 @@ class PluginDisplayer extends lx.GuiNode {
                 });
             }
         });
-
-        // Структура выбранного сниппета
-        new ContentTreeDisplayer(this);
-        new BlocksTreeDisplayer(this);
     }
 
     subscribeEvents() {

@@ -47,23 +47,11 @@ class AbstractTreeDisplayer {
             console.log( leaf.node );
         });
 
-        leaf.on('mouseover', e=>{
-            if (
-                e.target && e.relatedTarget
-                && e.target.__lx && e.relatedTarget.__lx
-                && (e.target.__lx === leaf || e.target.__lx.hasAncestor(leaf))
-                && (e.relatedTarget.__lx === leaf || e.relatedTarget.__lx.hasAncestor(leaf))
-            ) return;
+        leaf.mouseover(()=>{
             this.plugin.trigger(this.getOverEventName(), {node: leaf.node});
         });
 
-        leaf.on('mouseout', e=>{
-            if (
-                e.target && e.relatedTarget
-                && e.target.__lx && e.relatedTarget.__lx
-                && (e.target.__lx === leaf || e.target.__lx.hasAncestor(leaf))
-                && (e.relatedTarget.__lx === leaf || e.relatedTarget.__lx.hasAncestor(leaf))
-            ) return;
+        leaf.mouseout(()=>{
             this.plugin.trigger(this.getOutEventName());
         });
     }

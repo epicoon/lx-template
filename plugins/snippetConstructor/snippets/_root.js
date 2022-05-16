@@ -10,7 +10,7 @@
  * MAIN GUI
  **********************************************************************************************************************/
 #lx:tpl-begin;
-<lx.Box:@snippetsAgregator>(geom: [0,0,80,80])
+<lx.Box:@snippetsAggregator>(geom: [0,0,80,80])
 	.style('fontSize', '15px')
 	.streamProportional()
 	<lx.Box>(height:'30px', minHeight:'30px')

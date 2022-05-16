@@ -1,5 +1,5 @@
 #lx:namespace lxsc.gui;
-class SnippetsAgregator extends lx.GuiNode {
+class SnippetsAggregator extends lx.GuiNode {
     init() {
         this.selected = {
             mark: null,

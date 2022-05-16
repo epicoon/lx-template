@@ -10,12 +10,10 @@ class Core {
 		this.selectedSnippet = null;
 		this.snippets = {};
 
-		this.renderer = new lxsc.gui.GuiRenderer();
-
 		this.plugin.initGuiNodes({
 			pluginDisplayer: lxsc.gui.PluginDisplayer,
 			pluginSelector: lxsc.gui.PluginSelector,
-			snippetsAgregator: lxsc.gui.SnippetsAgregator
+			snippetsAggregator: lxsc.gui.SnippetsAggregator
 		});
 
 		this.widgetHighlighter = new lxsc.gui.WidgetHighlighter(this);
