@@ -15,32 +15,31 @@ class WidgetConfigParser extends NodeConfigParser
         $modif = $config['modif'] ?? [];
 
         $type = trim($type, '<>');
-        $preg = '/^(.+?)(?:\:|$)((?:@|\^|{(?:[^}]+?)})[^\.]+)?(.+|$)/';
+//        $preg = '/^(.+?)(?:\:|$)((?:@|\^|{(?:[^}]+?)})[^\.]+)?(.+|$)/';
+
+        $preg = '/^(.+?)(?:\:|$)([^\.]+)?(.+|$)/';
+
         preg_match_all($preg, $type, $matches);
 
         $widget = $matches[1][0];
         $var = null;
         $field = null;
-        $key = ($matches[2][0] == '')
+        $key = null;
+        $def = ($matches[2][0] == '')
             ? null
             : $matches[2][0];
-        if ($key) {
-            if ($key[0] == '@') {
-                $key = trim($key, '@');
-                $var = $key;
-            } elseif ($key[0] == '^') {
-                $var = trim($key, '^');
-                $key = null;
-            } elseif ($key[0] == '{') {
-                if (preg_match('/^{(f|field)}/', $key)) {
-                    $field = preg_replace('/^{(f|field)}/', '', $key);
-                    $var = $field;
-                    $key = null;
-                } else {
-                    $key = null;
+        if ($def) {
+            $defList = preg_split('/(@|\^|{[^}]+?})/', $def, null, PREG_SPLIT_DELIM_CAPTURE);
+            for ($i = 1, $l = count($defList); $i < $l; $i+=2) {
+                $mark = $defList[$i];
+                $value = $defList[$i + 1];
+                if ($mark == '{f}' || $key == '{field}') {
+                    $field = $value;
+                } elseif ($mark == '@') {
+                    $key = $value;
+                } elseif ($mark == '^') {
+                    $var = $value;
                 }
-            } else {
-                $key = null;
             }
         }
 

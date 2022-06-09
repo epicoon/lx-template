@@ -39,7 +39,7 @@ class TemplateRenderer
         foreach ($this->tree->getBlocks() as $name => $block) {
             $code = $name;
             $this->renderNodes($block->getChildren(), $code);
-            $this->code .= ($this->prettyMode ? (PHP_EOL . PHP_EOL) : PHP_EOL) . $code;
+            $this->code .= PHP_EOL . PHP_EOL . $code;
         }
 
         return $this->code;

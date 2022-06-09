@@ -9,7 +9,7 @@ class ElementsCollection {
 	}
 
 	del(elem) {
-		this.list.remove(elem);
+		this.list.lxRemove(elem);
 	}
 
 	forEach(func) {

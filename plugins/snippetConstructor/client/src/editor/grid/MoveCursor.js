@@ -29,12 +29,13 @@ function __move(self, event, move) {
 			css: 'lxsc-resizebut'
 		};
 
+	const avatarBox = self.elem.getAvatarBox();
 	self.box = new lx.Box({
-		parent: self.elem.box.parent,
+		parent: avatarBox.parent,
 		geom: true,
 		css: 'lxsc-movecursor'
 	});
-	self.box.copyGeom(self.elem.box);
+	self.box.copyGeom(avatarBox);
 
 	var moveBut = self.box.add(lx.Box, boxConfig);
 	moveBut.move(moveConfig);

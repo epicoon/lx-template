@@ -10,7 +10,7 @@ class ContentMap {
         this.root = lx.Tree.uCreateFromObject(
             map.root,
             'children',
-            (obj, node) => node.data = obj
+            (obj, node) => node.data = lxsc.BoxData.create(obj)
         );
         
         let blocks = [];
@@ -28,6 +28,14 @@ class ContentMap {
             'children',
             (obj, node) => node.data = obj
         );
+    }
+    
+    toMap() {
+        let blocks = {};
+        this.blocks.data.children.forEach(block=>{
+            blocks[block.name] = block;
+        });
+        return { root: this.root.data.getBoxData(), blocks };
     }
     
     getRoot() {

@@ -10,3 +10,4 @@ snippets: snippets
 images: assets/images
 
 cacheType: smart
+#cacheType: build

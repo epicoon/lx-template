@@ -22,20 +22,25 @@
 <lx.Box:.lxsc-worktree>(geom:[80,0,20,100])
 	<lx.Box:@pluginDisplayer>
 		.style('fontSize', '15px')
-		.stream(indent:'10px', minHeight:'20px', height:'20px')
+		.stream(indent:'10px', minHeight:'25px', height:'25px')
 		<lx.Box:@pluginChanger.lxsc-current-plugin-wrapper>
 			<lx.Box:.lxsc-current-plugin-lbl>.html('Plugin')
 			<lx.Box:@pluginName.lxsc-current-plugin>
 		<lx.Box:@snippetsLabel.lxsc-snippets-lbl>(text:'Snippets &#9650;').align(lx.CENTER, lx.MIDDLE)
 		<lx.Box:@snippetsWrapper>(minHeight:0, height:0)
-			<lx.TreeBox:@snippetsTree>(width:'100%')
-		<lx.Box>(text:'Content').align(lx.CENTER, lx.MIDDLE)
+			<lx.TreeBox:@snippetsTree>(width:'100%', labelWidth:100)
+		<lx.Box:@actualSnippetButs>
+			.grid(cols:2, step:'10px', minHeight:'25px', height:'25px')
+			<lx.Button:@butSaveSnippet>(text:'Save')
+			<lx.Button:@butResetSnippet>(text:'Reset')
+		<lx.Box>(text:'Content').align(lx.CENTER, lx.BOTTOM)
 		<lx.Box:@contentWrapper>(minHeight:0, height:0)
-			<lx.TreeBox:@contentTree>(width:'100%')
-		<lx.Box>(text:'Blocks').align(lx.CENTER, lx.MIDDLE)
+			<lx.TreeBox:@contentTree>(width:'100%', labelWidth:100)
+		<lx.Box>(text:'Blocks').align(lx.CENTER, lx.BOTTOM)
 		<lx.Box:@blocksWrapper>(minHeight:0, height:0)
-			<lx.TreeBox:@blocksTree>(width:'100%')
-<lx.Box:.lxsc-workpanel>(geom:[0,80,80,20])
+			<lx.TreeBox:@blocksTree>(width:'100%', labelWidth:100)
+<lx.Box:@workpanel.lxsc-workpanel>(geom:[0,80,80,20])
+	<lx.Box:@contentNode>(geom:true).setSnippet('selected/contentNode').hide()
 #lx:tpl-end;
 
 

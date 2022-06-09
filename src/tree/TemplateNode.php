@@ -153,15 +153,20 @@ class TemplateNode
         $this->data->merge($arr);
     }
     
-    public function toArray(): array
+    public function toArray(): ?array
     {
+        if (!$this->data) {
+            return null;
+        }
+
         return $this->data->toArray();
     }
 
     public function toArrayWithChildren(): array
     {
         $result = ['type' => $this->type];
-        if (!$this->isType(self::TYPE_COMMON)) {
+        $data = $this->toArray();
+        if ($data) {
             $result['data'] = $this->toArray();
         }
         

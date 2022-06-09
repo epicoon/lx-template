@@ -109,12 +109,25 @@ class TemplateCompiler
         $def = $node->toArray();
         $this->registerWidget($def['widget']);
         if ($this->withOutput && $def['var']) {
-            $nodeCode .= "if(!('".$def['var']."' in __out__)){__out__['{$def['var']}']=$varName;}else{"
-                ."if(!lx.isArray(__out__['{$def['var']}']))__out__['{$def['var']}']=[__out__['{$def['var']}']];"
-                ."__out__['{$def['var']}'].push($varName)}";
+            if ($def['field']) {
+                $nodeCode .= $this->getOutString($def['field'], $varName);
+            }
+            if ($def['key'] && $def['key'] !== $def['field']) {
+                $nodeCode .= $this->getOutString($def['key'], $varName);
+            }
+            if ($def['var'] && $def['var'] !== $def['key']) {
+                $nodeCode .= $this->getOutString($def['var'], $varName);
+            }
         }
 
         return $nodeCode;
+    }
+    
+    private function getOutString(string $key, string $varName): string
+    {
+        return "if(!('{$key}' in __out__)){__out__['{$key}']=$varName;}else{"
+            ."if(!lx.isArray(__out__['{$key}']))__out__['{$key}']=[__out__['{$key}']];"
+            ."__out__['{$key}'].push($varName)}";
     }
 
     private function registerWidget($widget)

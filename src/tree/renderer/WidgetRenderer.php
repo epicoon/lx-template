@@ -6,22 +6,73 @@ use lx\template\tree\TemplateNode;
 
 class WidgetRenderer extends NodeRenderer
 {
+    private $lenLimit = 121;
+
     protected function run(): void
     {
         $node = $this->node;
-        $indent = str_repeat(self::INDENT, $node->getLevel());
         $def = $node->toArray();
+
+        $indent = str_repeat(self::INDENT, $node->getLevel());
+        $widget = $this->renderWidget($def);
+
+        $this->code = $indent . $widget;
+
+        $config = $this->renderConfig($def['config']);
+        if ($this->prettyMode && $config !== '') {
+            if (mb_strlen($this->code) + mb_strlen($config) <= $this->lenLimit) {
+                $this->code .= $config;
+            } else {
+                $this->code .= PHP_EOL . $indent . self::INDENT . $config;
+            }
+        } else {
+            $this->code .= $config;
+        }
+
+        list($actions, $positioning) = $this->renderActions($def['actions']);
+        if ($actions) {
+            if ($this->prettyMode) {
+                $this->code .= PHP_EOL;
+                $row = $indent . self::INDENT;
+                foreach ($actions as $action) {
+                    if (mb_strlen($row) + mb_strlen($action) <= $this->lenLimit) {
+                        $row .= $action;
+                    } else {
+                        $this->code .= $row;
+                        $row = $indent . self::INDENT . $action;
+                    }
+                }
+                $this->code .= $row;
+            } else {
+                $this->code .= implode('', $actions);
+            }
+        }
+        if ($positioning) {
+            if ($this->prettyMode) {
+                $this->code .= PHP_EOL . $indent . self::INDENT . $positioning;
+            } else {
+                $this->code .= $positioning;
+            }
+        }
+    }
+
+    private function renderWidget(array $def): string
+    {
         $widget = '<' . $def['widget'];
-        if ($def['key'] || $def['volume'] || !empty($def['css'])) {
+        if ($def['field'] || $def['key'] || $def['var'] || $def['volume'] || !empty($def['css'])) {
             $widget .= ':';
         }
-        if ($def['key']) {
-            $widget .= '@' . $def['key'];
-        } elseif ($def['var']) {
-            $widget .= '^' . $def['var'];
-        } elseif ($def['field']) {
+
+        if ($def['field']) {
             $widget .= '{f}' . $def['field'];
         }
+        if ($def['key'] && $def['key'] !== $def['field']) {
+            $widget .= '@' . $def['key'];
+        }
+        if ($def['var'] && $def['var'] !== $def['key']) {
+            $widget .= '^' . $def['var'];
+        }
+
         if ($def['volume']) {
             $widget .= '._vol';
         }
@@ -31,42 +82,43 @@ class WidgetRenderer extends NodeRenderer
             }
         }
         $widget .= '>';
-
-        $this->code .= $indent . $widget
-            . $this->renderConfig($node->getLevel(), $def['config'])
-            . $this->renderActions($node->getLevel(), $def['actions']);
+        return $widget;
     }
 
-    private function renderConfig(int $level, array $config): string
+    private function renderConfig(array $config): string
     {
         if (empty($config)) {
             return '';
         }
 
-        $indent = $this->prettyMode
-            ? PHP_EOL . str_repeat(self::INDENT, $level + 1)
-            : '';
-
         $params = [];
         foreach ($config as $key => $value) {
             $params[] = "$key:$value";
         }
-        $params = implode(($this->prettyMode?', ':','), $params);
-
-        return "$indent($params)";
+        return '(' . implode(($this->prettyMode?', ':','), $params) . ')';
     }
 
-    private function renderActions(int $level, array $actions): string
+    private function renderActions(array $actions): array
     {
         if (empty($actions)) {
-            return '';
+            return [null, null];
         }
 
-        $indent = $this->prettyMode
-            ? PHP_EOL . str_repeat(self::INDENT, $level + 1)
-            : '';
+        //TODO размечать методы стратегий позиционирования в доках и брать инфу оттуда
+        $posNames = [
+            'align',
+            'stream',
+            'streamProportional',
+            'streamAutoSize',
+            'grid',
+            'gridProportional',
+            'gridStream',
+            'gridAdaptive',
+            'slot'
+        ];
 
         $actionsList = [];
+        $positioning = null;
         foreach ($actions as $action) {
             $args = [];
             if ($action['argsType'] == 'list') {
@@ -76,11 +128,14 @@ class WidgetRenderer extends NodeRenderer
                     $args[] = "$key:$value";
                 }
             }
+            $method = $action['method'];
             $args = implode(($this->prettyMode?', ':','), $args);
-            $actionsList[] = ".{$action['method']}($args)";
+            $str = ".{$method}({$args})";
+            in_array($method, $posNames)
+                ? $positioning = $str
+                : $actionsList[] = $str;
         }
 
-        $actionsCode = implode($indent, $actionsList);
-        return "$indent$actionsCode";
+        return [$actionsList, $positioning];
     }
 }

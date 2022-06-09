@@ -16,21 +16,16 @@ class GridCursor {
 		return this.mode == self::MODE_SELECT;
 	}
 
-	setAnchor(box) {
-		this.anchorFirst = box;
+	setAnchor(gridCell) {
+		this.anchorFirst = gridCell;
 		this.mode = self::MODE_SELECT;
-
-		var elemBox = new lx.Box({parent: this.grid.container, geom: [0, 0, 0, 0]});
-		elemBox.fill(this.grid.preElemColor);
-		var positioning = new lxsc.GridPositioning(this.grid, box.column, box.row, box.column, box.row);
-		this.elem = new lxsc.Element(elemBox, positioning);
-		this.elem.actualizeGeom();
+		this.elem = this.grid.createElement({gridCell});
 	}
 
-	actualize(box) {
+	actualize(gridCell) {
 		if (this.mode == self::MODE_NONE) return;
 
-		this.anchorLast = box;
+		this.anchorLast = gridCell;
 		this.elem.positioning.x0 = Math.min(this.anchorFirst.column, this.anchorLast.column);
 		this.elem.positioning.x1 = Math.max(this.anchorFirst.column, this.anchorLast.column);
 		this.elem.positioning.y0 = Math.min(this.anchorFirst.row, this.anchorLast.row);
@@ -42,7 +37,6 @@ class GridCursor {
 		if (this.mode == self::MODE_NONE) return;
 
 		this.grid.addElement(this.elem);
-
 		this.elem = null;
 		this.anchorFirst = null;
 		this.anchorLast = null;

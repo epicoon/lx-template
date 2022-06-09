@@ -14,6 +14,38 @@ use lx\template\tree\TemplateTree;
 
 class Respondent extends \lx\Respondent
 {
+    public function test($map): ResponseInterface
+    {
+        $tree = TemplateTree::createFromArray($map);
+        $renderer = new lx\template\TemplateRenderer($tree);
+        $code = $renderer->render();
+
+
+        $e = 1;
+        
+        
+        return $this->prepareResponse('ok');
+    }
+
+    public function loadReferences(): ResponseInterface
+    {
+        $result = [];
+
+        $widgets = [];
+        $modules = lx\ModuleDocParser::parseAll();
+        foreach ($modules as $moduleName => $classes) {
+            foreach ($classes as $className => $classDefinition) {
+                if (empty($classDefinition['doc']) || !array_key_exists('widget', $classDefinition['doc'])) {
+                    continue;
+                }
+                $widgets[$className] = $classDefinition;
+            }
+        }
+        $result['widgetsReference'] = $widgets;
+
+        return $this->prepareResponse($result);
+    }
+    
     public function getPluginsList(): ResponseInterface
     {
         $services = PackageBrowser::getServicesList();
@@ -76,6 +108,20 @@ class Respondent extends \lx\Respondent
             'images' => $plugin->getImagePathes(),
         ]);
     }
+    
+    public function actualizeSnippet(string $pluginName, string $snippetPath, array $map): ResponseInterface
+    {
+        return $this->prepareResponse(
+            $this->recalculateSnippet($pluginName, $snippetPath, $map, false)
+        );
+    }
+
+    public function saveSnippet(string $pluginName, string $snippetPath, array $map): ResponseInterface
+    {
+        return $this->prepareResponse(
+            $this->recalculateSnippet($pluginName, $snippetPath, $map, true)
+        );
+    }
 
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -109,5 +155,37 @@ class Respondent extends \lx\Respondent
             $pluginData[$dir->getName()] = $fileNames;
         }
         return $pluginData;
+    }
+
+    private function recalculateSnippet(string $pluginName, string $snippetPath, array $map, bool $update): array
+    {
+        $plugin = lx::$app->getPlugin($pluginName);
+        if (!$plugin) {
+            return $this->prepareWarningResponse("Plugin $pluginName not found");
+        }
+
+        $file = $plugin->findFile($snippetPath);
+        if (!$file) {
+            return $this->prepareWarningResponse('Snippet not found');
+        }
+
+        $tree = TemplateTree::createFromArray($map);
+        $renderer = new lx\template\TemplateRenderer($tree);
+        $tplCode = $renderer->render(true);
+
+        $code = "#lx:tpl-begin;$tplCode#lx:tpl-end;";
+        $compiler = new JsCompiler();
+        $code = $compiler->compileCode($code, $file->getPath());
+        $dependencies = $compiler->getDependencies()->toArray();
+
+        if ($update) {
+            $file->put($tplCode);
+        }
+
+        return [
+            'tree' => $tree->toArray(),
+            'code' => $code,
+            'dependencies' => $dependencies,
+        ];
     }
 }

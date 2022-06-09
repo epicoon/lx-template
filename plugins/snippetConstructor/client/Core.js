@@ -1,28 +1,19 @@
-#lx:require dataStructures/;
-#lx:require guiNodes/;
-#lx:require -R guiTools/;
-
 #lx:namespace lxsc;
-class Core {
+class Core extends lx.PluginCore {
 	constructor(plugin) {
-		this.plugin = plugin;
+		super(plugin);
 		this.selectedPlugin = null;
 		this.selectedSnippet = null;
 		this.snippets = {};
 
-		this.plugin.initGuiNodes({
-			pluginDisplayer: lxsc.gui.PluginDisplayer,
-			pluginSelector: lxsc.gui.PluginSelector,
-			snippetsAggregator: lxsc.gui.SnippetsAggregator
-		});
-
-		this.widgetHighlighter = new lxsc.gui.WidgetHighlighter(this);
+		this.widgetHighlighter = new lxsc.WidgetHighlighter(this);
+		this.workpanelSelector = new lxsc.WorkpanelSelector(this);
+		
+		this.widgetsReference = new lxsc.WidgetsReference(this);
+		__loadReferences(this);
+		__subscribeEvents(this);
 	}
 
-	trigger(eventName, data) {
-		this.plugin.trigger(eventName, data);
-	}
-	
 	selectPlugin(pluginName) {
 		^Respondent.getPluginData(pluginName).then(res=>{
 			if (res.success === false) {
@@ -31,7 +22,7 @@ class Core {
 			}
 
 			this.selectedPlugin = pluginName;
-			this.trigger('e-pluginSelected', {pluginName, pluginData: res.data});
+			this.plugin.trigger('e-pluginSelected', {pluginName, pluginData: res.data});
 		});
 	}
 
@@ -82,21 +73,36 @@ class Core {
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 function __addSnippet(self, pluginName, snippetPath, snippetData) {
-	lx.dependencies.promiseModules(
-		snippetData.dependencies.modules || [],
-		()=>{
-			let snippetKey = self.getSnippetKey(pluginName, snippetPath);
-			self.snippets[snippetKey] = {
-				plugin: pluginName,
-				snippet: snippetPath,
-				content: new lxsc.ContentMap(snippetData.tree)
-			};
-			self.plugin.trigger('e-snippetAdded', {
-				snippetKey,
-				snippetCode: snippetData.code,
-				images: snippetData.images
-			});
-			self.selectSnippet(pluginName, snippetPath);
-		}
-	)
+	let snippetKey = self.getSnippetKey(pluginName, snippetPath),
+		snippetInfo = new lxsc.SnippetInfo(self, pluginName, snippetPath);
+	self.snippets[snippetKey] = snippetInfo;
+	snippetInfo.actualize(snippetData, ()=>{
+		self.plugin.trigger('e-snippetAdded', {snippetInfo: self.snippets[snippetKey]});
+		self.selectSnippet(pluginName, snippetPath);
+	});
+}
+
+function __loadReferences(self) {
+	^Respondent.loadReferences().then(res=>{
+		self.widgetsReference.setData(res.data.widgetsReference);
+		self.getPlugin().trigger('e-referencesLoaded');
+	});
+}
+
+function __subscribeEvents(self) {
+	const plugin = self.getPlugin();
+
+	plugin.on('e-actualizeSnippet', e=>{
+		const snippetInfo = e.data.snippetInfo || self.getSelectedSnippetInfo(),
+			callback = e.data.callback || null,
+			pluginName = snippetInfo.pluginName,
+			snippetPath = snippetInfo.snippetPath,
+			map = snippetInfo.content.toMap();
+		^Respondent.actualizeSnippet(pluginName, snippetPath, map).then(res=>{
+			//TODO if (!res.success)
+			snippetInfo.setChanged();
+			snippetInfo.actualize(res.data);
+			if (callback) callback();
+		});
+	});
 }

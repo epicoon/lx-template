@@ -1,9 +1,12 @@
 #lx:use lx.Color;
 
 #lx:namespace lxsc;
-class GridField {
-	constructor(elem, config = null) {
-		this.elem = elem;
+class GridProportionalField {
+	constructor(editor) {
+		this.core = editor.getCore();
+		this.editor = editor;
+		this.originalBox = editor.getOriginalBox();
+		this.editorBox = editor.getEditorBox();
 		this.elemCollection = new lxsc.ElementsCollection();
 		this.activeElem = null;
 
@@ -13,10 +16,9 @@ class GridField {
 		this.lightColor = this.baseColor.clone().lighten(10);
 		this.darkColor = this.baseColor.clone().darken(10);
 
-		//TODO
-		this.cols = 12;
-		this.rows = 20;
-		if (!config) config = {indent: '10px'};
+		this.cols = this.originalBox.positioning().getCols();
+		this.rows = this.originalBox.positioning().getRows() || 1;
+		let config = this.originalBox.positioning().getIndents();
 		this.indents = new lx.IndentData(config);
 
 		this.cursor = new lxsc.GridCursor(this);
@@ -24,8 +26,15 @@ class GridField {
 		this.grid = null;
 		this.map = [];
 		__buildBox(this);
-		this.elem.box.on('resize', ()=>{
+		this.editorBox.on('resize', ()=>{
 			this.elemCollection.forEach(el=>el.actualizeGeom());
+		});
+
+		this.originalBox.getChildren().forEach((child, i)=>{
+			this.addElement(this.createElement({
+				originalBox: child,
+				boxData: this.editor.getEditingBoxData().child(i)
+			}));
 		});
 	}
 
@@ -47,19 +56,42 @@ class GridField {
 		return matches;
 	}
 
+	createElement(config) {
+		const avatarBox = new lx.Box({parent: this.container, geom: [0, 0, 0, 0]});
+		avatarBox.fill(this.preElemColor);
+
+		const elemConfig = {avatarBox};
+		let position;
+		if (config.gridCell)
+			position = [config.gridCell.column, config.gridCell.row, config.gridCell.column, config.gridCell.row];
+		else if (config.originalBox) {
+			position = config.originalBox.style('grid-area').match(/\d+/g);
+			for (let i in position) position[i] = +position[i] - 1;
+			position = [position[1], position[0], position[3]-1, position[2]-1];
+			elemConfig.originalBox = config.originalBox;
+			elemConfig.boxData = config.boxData;
+		}
+
+		elemConfig.positioning = new lxsc.GridPositioning(this, position);
+		const elem = new lxsc.Element(elemConfig);
+		elem.actualizeGeom();
+		return elem;
+	}
+
 	addElement(elem) {
-		elem.box.fill(this.elemColor);
-		elem.box.on('mouseout', ()=>__deactivateElem(this, elem));
+		const box = elem.getAvatarBox();
+		box.fill(this.elemColor);
+		box.on('mouseout', ()=>__deactivateElem(this, elem));
 		this.elemCollection.add(elem);
 	}
 
 	delElement(elem) {		
 		this.elemCollection.del(elem);
-		elem.box.del();
+		elem.destruct();
 	}
 
 	actualizeElementGeom(elem, x0, y0, x1, y1) {
-		var indents = this.indents.get(this.elem.box, 'px');
+		var indents = this.indents.get(this.editorBox, 'px');
 		var lastPoint = {x:null, y:null};
 		for (var y=this.rows-1; y>=0; y--) {
 			var tyle = this.getBox(0, y);
@@ -76,8 +108,9 @@ class GridField {
 			}
 		}
 
-		var firstPoint = {x:null, y:null};
-		if (elem.box.left('px') == x0 && elem.box.top('px') == y0) {
+		const firstPoint = {x:null, y:null},
+			avatarBox = elem.getAvatarBox();
+		if (avatarBox.left('px') == x0 && avatarBox.top('px') == y0) {
 			firstPoint.x = elem.positioning.x0;
 			firstPoint.y = elem.positioning.y0;
 		} else {
@@ -91,6 +124,22 @@ class GridField {
 		elem.positioning.y1 = lastPoint.y;
 		elem.actualizeGeom();
 	}
+
+	applyChanges() {
+		const containerBoxData = this.editor.getEditingBoxData();
+		containerBoxData.resetChildren();
+		this.elemCollection.forEach(elem=>{
+			let boxData = elem.getBoxData() || lxsc.WidgetData.createBlank(),
+				geom = {
+					left: elem.positioning.x0,
+					top: elem.positioning.y0,
+					width: elem.positioning.x1 - elem.positioning.x0 + 1,
+					height: elem.positioning.y1 - elem.positioning.y0 + 1
+				};
+			boxData.setGeom(geom);
+			containerBoxData.addChild(boxData);
+		});
+	}
 }
 
 
@@ -99,10 +148,10 @@ class GridField {
  **********************************************************************************************************************/
 
 function __buildBox(self) {
-	self.elem.box.useRenderCache();
+	self.editorBox.useRenderCache();
 
-	self.container = new lx.Box({parent: self.elem.box, geom: true});
-	self.grid = new lx.Box({parent: self.elem.box, geom: true});
+	self.container = new lx.Box({parent: self.editorBox, geom: true});
+	self.grid = new lx.Box({parent: self.editorBox, geom: true});
 
 	self.grid.fill(self.lightColor);
 	self.grid.opacity(0.7);
@@ -156,7 +205,7 @@ function __buildBox(self) {
 		}
 	self.grid.end();
 
-	self.elem.box.applyRenderCache();
+	self.editorBox.applyRenderCache();
 
 	lx.body.on('mouseup', function(e) {
 		e.preventDefault();
@@ -168,7 +217,7 @@ function __activateElem(self, elem) {
 	if (self.activeElem) __deactivateElem(self, self.activeElem);
 	self.activeElem = elem;
 
-	var box = elem.box;
+	var box = elem.getAvatarBox();
 	box.style('z-index', 50);
 
 	box.add(lx.Box, {
@@ -205,7 +254,7 @@ function __activateElem(self, elem) {
 }
 
 function __deactivateElem(self, elem) {
-	var box = elem.box;
+	var box = elem.getAvatarBox();
 	box.style('z-index', null);
 	box.del('delBut');
 	box.del('moveBut');
