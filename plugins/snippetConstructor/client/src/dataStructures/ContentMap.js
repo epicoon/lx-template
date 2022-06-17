@@ -6,11 +6,13 @@ class ContentMap {
         TYPE_BLOCK = 'block',
         TYPE_ROOT_BLOCK = 'rootBlock';
     
-    constructor(map) {
+    constructor(snippetInfo, map) {
+        this.core = snippetInfo.core;
+        this.snippetInfo = snippetInfo;
         this.root = lx.Tree.uCreateFromObject(
             map.root,
             'children',
-            (obj, node) => node.data = lxsc.BoxData.create(obj)
+            (obj, node) => node.data = lxsc.BoxData.create(this, obj, node)
         );
         
         let blocks = [];
@@ -26,8 +28,20 @@ class ContentMap {
                 children: blocks
             },
             'children',
-            (obj, node) => node.data = obj
+            (obj, node) => node.data = lxsc.BoxData.create(this, obj, node)
         );
+    }
+    
+    getCore() {
+        return this.core;
+    }
+    
+    getPlugin() {
+        return this.core.getPlugin();
+    }
+
+    getSnippetInfo() {
+        return this.snippetInfo;
     }
     
     toMap() {
@@ -76,6 +90,10 @@ class ContentMap {
         }
 
         return [];
+    }
+
+    createBoxDataBlank(type, data = {}) {
+        return lxsc.BoxData.createBlank(type, this, data);
     }
 }
 

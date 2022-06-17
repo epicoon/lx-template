@@ -12,6 +12,7 @@ class SnippetDisplayer {
         });
         this.mark.align(lx.LEFT, lx.MIDDLE);
         this.mark.click(()=>{
+            this.core.getPlugin().trigger('e-beforeChangeSnippet');
             this.core.selectSnippet(this.snippetInfo.pluginName, this.snippetInfo.snippetPath);
         });
 
@@ -38,7 +39,6 @@ class SnippetDisplayer {
         rootBox.begin();
         lx._f.createAndCallFunction(this.snippetInfo.snippetCode);
         rootBox.end();
-        rootBox.getChildren(true).forEach(child=>child.addClass('lxsc-content'));
     }
     
     on() {

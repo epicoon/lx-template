@@ -17,7 +17,7 @@ class PluginSelector extends lx.GuiNode {
 		this.box->back.click(()=>this.close());
 
 		// Дерево плагинов
-		this.box->tree.setLeafConstructor(leaf=>{
+		this.box->tree.setLeafRenderer(leaf=>{
 			let node = leaf.node;
 			leaf->label.text(node.data.value || node.data.key);
 			if (node.data.value) {

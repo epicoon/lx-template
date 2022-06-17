@@ -16,8 +16,13 @@ class PluginDisplayer extends lx.GuiNode {
     }
 
     init() {
+        this.snippetsMetaData = {};
+
         // Кнопки актуализации выбранного сниппета
-        this.actualSnippetButs = #lx:model { save:{default:0}, reset:{default:0} };
+        this.actualSnippetButs = #lx:model {
+            save: {default: 0},
+            reset: {default: 0}
+        };
         this.getSaveSnippetButton().setField('save', function (val) { this.disabled(!val); });
         this.getResetSnippetButton().setField('reset', function (val) { this.disabled(!val); });
         this.actualSnippetButs.bind(this.getWidget()->>actualSnippetButs);
@@ -47,7 +52,7 @@ class PluginDisplayer extends lx.GuiNode {
         // Дерево сниппетов выбранного плагина
         const snippetsTree = widget->>snippetsTree;
         snippetsTree.setLeafsRight(snippetsTree.step);
-        snippetsTree.setLeafConstructor(leaf=>{
+        snippetsTree.setLeafRenderer(leaf=>{
             let node = leaf.node;
             leaf->label.text(node.data.value || node.data.key);
             if (node.data.value) {
@@ -81,6 +86,14 @@ class PluginDisplayer extends lx.GuiNode {
                 snippetInfo.actualize(res.data);
             });
         });
+
+        widget->>butSwitchContent.click(()=>{
+            const snippetInfo = this.getCore().getSelectedSnippetInfo(),
+                metaData = this.getSnippetMetaData(snippetInfo.getKey());
+            metaData.content = !metaData.content;
+            this.setSnippetMetaData(snippetInfo.getKey(), metaData);
+            __actualizeContentMarking(snippetInfo, metaData.content);
+        });
     }
 
     subscribeEvents() {
@@ -89,7 +102,15 @@ class PluginDisplayer extends lx.GuiNode {
             this.setPlugin(event.data.pluginName);
             this.setSnippetsList(event.data.pluginData);
         });
-        plugin.on('e-snippetSelected',event=>
+        plugin.on('e-beforeChangeSnippet', event=>{
+            const snippetInfo = this.getCore().getSelectedSnippetInfo();
+            if (!snippetInfo) return;
+            this.setSnippetMetaData(snippetInfo.getKey(), {
+                contentOpenedInfo: this.getContentTree().getOpenedInfo(),
+                blocksOpenedInfo: this.getBlocksTree().getOpenedInfo()
+            });
+        });
+        plugin.on('e-snippetSelected', event=>
             __actualizeSnippet(this, this.getCore().getSnippetInfo(
                 event.data.selectedPlugin,
                 event.data.selectedSnippet
@@ -105,6 +126,24 @@ class PluginDisplayer extends lx.GuiNode {
         plugin.on('e-contentTreeNodeSelected', event=>__actualizeLeafCss(this, event.data.node, true));
         plugin.on('e-contentTreeNodeUpdated', event=>__actualizeLeafCss(this, event.data.node, true));
         plugin.on('e-contentTreeNodeUnselected', event=>__actualizeLeafCss(this, event.data.node, false));
+    }
+
+    getSnippetMetaData(snippetInfoKey) {
+        if (snippetInfoKey in this.snippetsMetaData)
+            return this.snippetsMetaData[snippetInfoKey];
+        return {
+            content: true,
+            contentOpenedInfo: [],
+            blocksOpenedInfo: []
+        };
+    }
+
+    setSnippetMetaData(snippetInfoKey, data) {
+        let metaData = this.getSnippetMetaData(snippetInfoKey);
+        if (data.content !== undefined) metaData.content = data.content;
+        if (data.contentOpenedInfo !== undefined) metaData.contentOpenedInfo = data.contentOpenedInfo;
+        if (data.blocksOpenedInfo !== undefined) metaData.blocksOpenedInfo = data.blocksOpenedInfo;
+        this.snippetsMetaData[snippetInfoKey] = metaData;
     }
 
     getContentTree() {
@@ -152,6 +191,12 @@ function __getLeafByNode(self, node) {
 function __actualizeSnippet(self, snippetInfo) {
     self.getContentTree().setData(snippetInfo.content.getRoot());
     self.getBlocksTree().setData(snippetInfo.content.getBlocks());
+
+    const metaData = self.getSnippetMetaData(snippetInfo.getKey());
+    __actualizeContentMarking(snippetInfo, metaData.content);
+    self.getContentTree().useOpenedInfo(metaData.contentOpenedInfo);
+    self.getBlocksTree().useOpenedInfo(metaData.blocksOpenedInfo);
+
     if (snippetInfo.isChanged()) {
         self.actualSnippetButs.save = 1;
         self.actualSnippetButs.reset = 1;
@@ -159,4 +204,10 @@ function __actualizeSnippet(self, snippetInfo) {
         self.actualSnippetButs.save = 0;
         self.actualSnippetButs.reset = 0;
     }
+}
+
+function __actualizeContentMarking(snippetInfo, show) {
+    show
+        ? snippetInfo.getRootBox().getChildren(true).forEach(child=>child.addClass('lxsc-content'))
+        : snippetInfo.getRootBox().getChildren(true).forEach(child=>child.removeClass('lxsc-content'));
 }

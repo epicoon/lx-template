@@ -11,6 +11,7 @@
 class Plugin extends lx.Plugin {
     initCssAsset(css) {
         // Work boxes
+        css.inheritClass('lxsc-Box', 'AbstractBox');
         css.addClass('lxsc-worktree', {
             backgroundColor: css.preset.altBodyBackgroundColor
         });
@@ -85,11 +86,11 @@ class Plugin extends lx.Plugin {
             before: {
                 content: '\'\'',
                 display: 'block',
-                position: 'absolute',
+                position: 'inherit',
                 top: 0,
                 left: 0,
-                right: 0,
-                bottom: 0,
+                width: '100%',
+                height: '100%',
                 opacity: 0.5,
                 backgroundColor: css.preset.checkedLightColor
             }
@@ -130,6 +131,7 @@ class Plugin extends lx.Plugin {
             pluginDisplayer: lxsc.gui.PluginDisplayer,
             snippetsAggregator: lxsc.gui.SnippetsAggregator,
             contentNode: lxsc.gui.ContentNode,
+            newBoxDataForm: lxsc.gui.NewBoxDataForm,
         });
 
         this.core = new lxsc.Core(this);
@@ -142,32 +144,27 @@ class Plugin extends lx.Plugin {
         testBut.border();
         testBut.click(()=>{
             console.log('!!!TEST');
-
-
+            console.log(this.core);
         });
         /*
+        TODO
         Сокращения:
             - СП - стратегии позиционирования
         Доделывать:
-        - добавить кнопку создания новых элементов в дереве контента
-        - добавить кнопку удаления элементов в дереве контента
-        - добавить выключатель постоянной подсветки контента ('lxsc-content')
         - добавить EggMenu для эдитора пропорционального грида
             - возможность менять количество строк и колонок
             - возможность менять отступы
             - возможность менять минимальные размеры ячеек
         - доделать полиморфизм эдиторов для разных СП
-            - фабрика эдиторов
             - реализация эдиторов для обычного грида(?), обычной СП, карты
             - EggMenu для СП кому это нужно
         - реализовать переключение СП
-            - нужно разметить код классов СП доками
-            - нужно парсить доки и строить справочник доступных стратегий позиционирования
             - использовать справочник в модели для ContentNodeSelected, реализовать связывание с выпадающим списком
+
         - реализовать переключение типа виджета
             - нужно разметить код классов виджетов доками
-            - нужно парсить доки и строить справочник доступных виджетов
             - использовать справочник в модели для ContentNodeSelected, реализовать связывание с выпадающим списком
+
         - реализовать редактирование массива CSS-классов
         - реализовать редактирование конфигурации элемента
             - геоматрия отдельно (включая volume:true/false)
@@ -175,12 +172,16 @@ class Plugin extends lx.Plugin {
         - реализовать редактирование вызовов методов
             - нужно разметить код методов виджетов доками
             - информация для доступных методов и их аргументов берется из парсинга доков методов виджетов
+
+        - реализовать множественное выделение
+        - реализовать интерфейс создания блоков из узлов дерева, идущих подряд
+        - крупная подзадача - эдитор пресетов
         */
 
 
         // Загружаю тестовый сниппет
         let testPlugin = 'lx/help:test';
-        let testSnippet = 'snippets/test1.lxtpl';
+        let testSnippet = 'snippets/test2.lxtpl';
         this.on('e-pluginSelected', ()=>{
             this.core.loadSnippet(testSnippet);
         });
@@ -190,9 +191,6 @@ class Plugin extends lx.Plugin {
         });
 
         this.on('e-referencesLoaded', ()=>{
-
-            console.log( this.getCore().widgetsReference );
-
             this.core.selectPlugin(testPlugin);
         })
 

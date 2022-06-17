@@ -51,7 +51,7 @@ class WidgetConfigParser extends NodeConfigParser
             array_shift($arr);
             $css = $arr;
             unset($arr);
-            $index = array_search('_vol', $css);
+            $index = array_search('_spread', $css);
             if ($index !== false) {
                 $isVolume = true;
                 unset($css[$index]);

@@ -108,7 +108,7 @@ class TemplateCompiler
 
         $def = $node->toArray();
         $this->registerWidget($def['widget']);
-        if ($this->withOutput && $def['var']) {
+        if ($this->withOutput) {
             if ($def['field']) {
                 $nodeCode .= $this->getOutString($def['field'], $varName);
             }

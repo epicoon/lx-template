@@ -9,7 +9,7 @@ class ContentEditor {
         this.containerField = null;
         this.editorBox = null;
     }
-    
+
     getCore() {
         return this.core;
     }
@@ -51,9 +51,10 @@ class ContentEditor {
         this.editorBox = snippetEditorWrapper.add(lx.Box, {key:'snippetEditor', geom});
         this.editorBox.fill('white');
 
-
-        //TODO Фабричный метод
-        this.containerField = new lxsc.GridProportionalField(this);
+        this.containerField = lxsc.AbstractContainerField.create(
+            this,
+            this.originalBox.positioning().lxFullClassName()
+        );
     }
 
     stop() {

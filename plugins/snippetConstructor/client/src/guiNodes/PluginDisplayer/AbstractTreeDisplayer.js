@@ -7,11 +7,33 @@ class AbstractTreeDisplayer {
         this.tree = this.findTreeWidget();
 
         this.tree.setLeafsRight( this.tree.step * 3 + this.tree.leafHeight * 2 );
-        this.tree.setLeafConstructor(leaf=>{
+        this.tree.setLeafRenderer(leaf=>{
             this.setLeafName(leaf);
             leaf->label.align(lx.LEFT, lx.MIDDLE);
-            this.setHandlers(leaf);
-            this.addButtons(leaf);
+            __setHandlers(this, leaf);
+            __addButtons(this, leaf);
+        });
+
+        const plugin = this.getPlugin();
+        this.tree.beforeAddLeaf(parentNode=>{
+            this.tree.holdAdding();
+            const parentBoxData = parentNode.data,
+                content = parentBoxData.getContentMap();
+
+            if (parentNode === content.getBlocks()) {
+                plugin.root->inputPopup.open('New block name')
+                    .confirm(newBlockName=>
+                        __addBoxData(this, parentNode, lxsc.ContentMap.TYPE_ROOT_BLOCK, {name: newBlockName})
+                    ).reject(()=>this.tree.breakAdding());
+                return;
+            }
+
+            plugin.getGuiNode('newBoxDataForm').open(__getBlocksList(parentBoxData))
+                .onAddElement(type=>
+                    __addBoxData(this, parentNode, lxsc.ContentMap.TYPE_WIDGET, {widget: type})
+                ).onAddBlock(name=>
+                    __addBoxData(this, parentNode, lxsc.ContentMap.TYPE_BLOCK, {name})
+                ).onCancel(()=>this.tree.breakAdding());
         });
     }
 
@@ -22,56 +44,107 @@ class AbstractTreeDisplayer {
     getCore() {
         return this.pluginDisplayer.getCore();
     }
-    
+
+    /**
+     * @abstract
+     */
     findTreeWidget() {
-        // abstract
+        // pass
     }
 
+    /**
+     * @abstract
+     */
     getOverEventName() {
-        // abstract
+        // pass
     }
 
+    /**
+     * @abstract
+     */
     getOutEventName() {
-        // abstract
+        // pass
     }
 
     setLeafName(leaf) {
         const node = leaf.node;
         const nodeData = node.data;
-        let name = nodeData.type;
-        switch (nodeData.type) {
-            case lxsc.ContentMap.TYPE_WIDGET:
-
-                //TODO в ContentMap для блоков надо обернуть данные чем-то вроде lxsc.BoxData
-
-                name = nodeData.widget;
-                let key = nodeData.key || nodeData.field || nodeData.var;
-                if (key !== null) name += ': ' + key;
-                break;
-            case lxsc.ContentMap.TYPE_BLOCK:
-
-                console.log(nodeData);
-
-                let blockName = nodeData.data.name.match(/<(.+?)>/)[1];
-                name = 'block: ' + blockName;
-                break;
-        }
-        leaf->label.text(name);
+        leaf->label.text(nodeData.getLabel());
     }
+}
 
-    setHandlers(leaf) {
-        leaf->label.click(()=>{
-            this.plugin.trigger('e-contentTreeNodeSelected', {
-                snippetInfo: this.getCore().getSelectedSnippetInfo(),
-                node: leaf.node
-            });
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * PRIVATE
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+function __setHandlers(self, leaf) {
+    leaf->label.click(()=>{
+        self.plugin.trigger('e-contentTreeNodeSelected', {
+            snippetInfo: self.getCore().getSelectedSnippetInfo(),
+            node: leaf.node
         });
+    });
 
-        leaf.mouseover(()=>this.plugin.trigger(this.getOverEventName(), {node: leaf.node}));
-        leaf.mouseout(()=>this.plugin.trigger(this.getOutEventName()));
+    leaf.mouseover(()=>self.plugin.trigger(self.getOverEventName(), {node: leaf.node}));
+    leaf.mouseout(()=>self.plugin.trigger(self.getOutEventName()));
+}
+
+function __addButtons(self, leaf) {
+    const plugin = self.getPlugin(),
+        nodeData = leaf.node.data;
+
+    if (nodeData.contentIsAllowed()) leaf.createAddButton();
+    else leaf.createChild();
+
+    leaf.createButton({css: 'lxsc-tree-but-del', click: ()=>{
+        nodeData.del();
+        plugin.trigger('e-actualizeSnippet');
+    }});
+}
+
+function __addBoxData(self, parentNode, type, data) {
+    const plugin = self.getPlugin(),
+        parentBoxData = parentNode.data,
+        content = parentBoxData.getContentMap(),
+        boxData = content.createBoxDataBlank(type, data),
+        newNode = self.tree.resumeAdding({
+            newNodeAttributes: { data: boxData }
+        });
+    boxData.node = newNode;
+    parentBoxData.addChild(boxData);
+    plugin.trigger('e-actualizeSnippet');
+}
+
+function __getBlocksList(boxData) {
+    let rootBlock = null,
+        tempNode = boxData.node;
+    while (tempNode && !rootBlock) {
+        if (tempNode.data.type === lxsc.ContentMap.TYPE_ROOT_BLOCK) rootBlock = tempNode.data;
+        else tempNode = tempNode.root;
     }
-    
-    addButtons(leaf) {
-        // pass
+
+    const blocks = boxData.getContentMap().getBlocks();
+    if (!rootBlock) {
+        let result = [];
+        for (let i in blocks.nodes) {
+            let node = blocks.nodes[i];
+            result.push(node.data.name.match(/<(.+?)>/)[1]);
+        }
+        return result;
+    };
+
+    let result = [];
+    for (let i in blocks.nodes) {
+        let node = blocks.nodes[i];
+        if (node.data === rootBlock) continue;
+        let valid = true;
+        node.eachNode(iNode=>{
+            if (iNode.data.name === rootBlock.name)
+                valid = false;
+        });
+        if (!valid) continue;
+        result.push(node.data.name.match(/<(.+?)>/)[1]);
     }
+    return result;
 }

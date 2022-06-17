@@ -64,5 +64,7 @@ class ContentNodeModel extends lx.BindableModel {
     constructor(data) {
         super();
         this.data = data;
+
+        console.log(data);
     }
 }

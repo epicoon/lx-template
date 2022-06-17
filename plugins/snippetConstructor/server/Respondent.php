@@ -16,34 +16,42 @@ class Respondent extends \lx\Respondent
 {
     public function test($map): ResponseInterface
     {
-        $tree = TemplateTree::createFromArray($map);
-        $renderer = new lx\template\TemplateRenderer($tree);
-        $code = $renderer->render();
 
 
-        $e = 1;
-        
-        
         return $this->prepareResponse('ok');
     }
 
     public function loadReferences(): ResponseInterface
     {
-        $result = [];
+        $info = lx::$app->jsModules->getModuleInfo('lx.Box');
+        $docBox = $info->getDocumentation();
+        $info = lx::$app->jsModules->getModuleInfo('lx.Rect');
+        $docRect = $info->getDocumentation();
+
+        $e = 1;
 
         $widgets = [];
-        $modules = lx\ModuleDocParser::parseAll();
-        foreach ($modules as $moduleName => $classes) {
-            foreach ($classes as $className => $classDefinition) {
-                if (empty($classDefinition['doc']) || !array_key_exists('widget', $classDefinition['doc'])) {
+        $positioningStategies = [];
+        $modulesInfo = lx::$app->jsModules->getModulesInfo();
+        /** @var lx\JsModuleInfo $info */
+        foreach ($modulesInfo as $info) {
+            $classes = $info->getDocumentation();
+            /** @var lx\JsClassDocumentation $classDoc */
+            foreach ($classes as $classDoc) {
+                if ($classDoc->hasMarker('widget')) {
+                    $widgets[$classDoc->getClassName()] = $classDoc->toArray();
                     continue;
                 }
-                $widgets[$className] = $classDefinition;
+                if ($classDoc->hasMarker('positioningStrategy')) {
+                    $positioningStategies[$classDoc->getClassName()] = $classDoc->toArray();
+                }
             }
         }
-        $result['widgetsReference'] = $widgets;
 
-        return $this->prepareResponse($result);
+        return $this->prepareResponse([
+            'widgetsReference' => $widgets,
+            'positioningStrategies' => $positioningStategies,
+        ]);
     }
     
     public function getPluginsList(): ResponseInterface
@@ -173,7 +181,7 @@ class Respondent extends \lx\Respondent
         $renderer = new lx\template\TemplateRenderer($tree);
         $tplCode = $renderer->render(true);
 
-        $code = "#lx:tpl-begin;$tplCode#lx:tpl-end;";
+        $code = ($tplCode === '') ? '' : "#lx:tpl-begin;$tplCode#lx:tpl-end;";
         $compiler = new JsCompiler();
         $code = $compiler->compileCode($code, $file->getPath());
         $dependencies = $compiler->getDependencies()->toArray();

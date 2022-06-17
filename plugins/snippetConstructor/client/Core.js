@@ -1,7 +1,6 @@
 #lx:namespace lxsc;
 class Core extends lx.PluginCore {
-	constructor(plugin) {
-		super(plugin);
+	init() {
 		this.selectedPlugin = null;
 		this.selectedSnippet = null;
 		this.snippets = {};
@@ -10,6 +9,7 @@ class Core extends lx.PluginCore {
 		this.workpanelSelector = new lxsc.WorkpanelSelector(this);
 		
 		this.widgetsReference = new lxsc.WidgetsReference(this);
+		this.positioningStrategiesReference = new lxsc.PositioningStrategiesReference(this);
 		__loadReferences(this);
 		__subscribeEvents(this);
 	}
@@ -38,6 +38,7 @@ class Core extends lx.PluginCore {
 				return;
 			}
 
+			this.getPlugin().trigger('e-beforeChangeSnippet');
 			__addSnippet(this, this.selectedPlugin, snippetPath, res.data);
 		});
 	}
@@ -85,6 +86,7 @@ function __addSnippet(self, pluginName, snippetPath, snippetData) {
 function __loadReferences(self) {
 	^Respondent.loadReferences().then(res=>{
 		self.widgetsReference.setData(res.data.widgetsReference);
+		self.positioningStrategiesReference.setData(res.data.positioningStrategies);
 		self.getPlugin().trigger('e-referencesLoaded');
 	});
 }

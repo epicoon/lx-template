@@ -1,13 +1,8 @@
 #lx:use lx.Color;
 
 #lx:namespace lxsc;
-class GridProportionalField {
-	constructor(editor) {
-		this.core = editor.getCore();
-		this.editor = editor;
-		this.originalBox = editor.getOriginalBox();
-		this.editorBox = editor.getEditorBox();
-		this.elemCollection = new lxsc.ElementsCollection();
+class GridProportionalField extends lxsc.AbstractContainerField {
+	init() {
 		this.activeElem = null;
 
 		this.preElemColor = 'red';
@@ -35,6 +30,23 @@ class GridProportionalField {
 				originalBox: child,
 				boxData: this.editor.getEditingBoxData().child(i)
 			}));
+		});
+	}
+
+	applyChanges() {
+		const containerBoxData = this.editor.getEditingBoxData();
+		containerBoxData.resetChildren();
+		this.elemCollection.forEach(elem=>{
+			//TODO цепочка вызовов this.editor.snippetInfo.content. некрасиво
+			let boxData = elem.getBoxData() || this.editor.snippetInfo.content.createBoxDataBlank(lxsc.ContentMap.TYPE_WIDGET),
+				geom = {
+					left: elem.positioning.x0,
+					top: elem.positioning.y0,
+					width: elem.positioning.x1 - elem.positioning.x0 + 1,
+					height: elem.positioning.y1 - elem.positioning.y0 + 1
+				};
+			boxData.setGeom(geom);
+			containerBoxData.addChild(boxData);
 		});
 	}
 
@@ -123,22 +135,6 @@ class GridProportionalField {
 		elem.positioning.x1 = lastPoint.x;
 		elem.positioning.y1 = lastPoint.y;
 		elem.actualizeGeom();
-	}
-
-	applyChanges() {
-		const containerBoxData = this.editor.getEditingBoxData();
-		containerBoxData.resetChildren();
-		this.elemCollection.forEach(elem=>{
-			let boxData = elem.getBoxData() || lxsc.WidgetData.createBlank(),
-				geom = {
-					left: elem.positioning.x0,
-					top: elem.positioning.y0,
-					width: elem.positioning.x1 - elem.positioning.x0 + 1,
-					height: elem.positioning.y1 - elem.positioning.y0 + 1
-				};
-			boxData.setGeom(geom);
-			containerBoxData.addChild(boxData);
-		});
 	}
 }
 

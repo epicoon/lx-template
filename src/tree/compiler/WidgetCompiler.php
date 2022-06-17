@@ -48,7 +48,9 @@ class WidgetCompiler extends NodeCompiler
         }
         $init .= ');';
 
-        if ($def['var'] || !empty($def['actions']) || !empty($this->node->getChildren())) {
+        if ($def['var'] || $def['field'] || $def['key']
+            || !empty($def['actions']) || !empty($this->node->getChildren())
+        ) {
             $init = "var {$this->var}=" . $init;
         }
 

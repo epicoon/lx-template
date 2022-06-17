@@ -74,7 +74,7 @@ class WidgetRenderer extends NodeRenderer
         }
 
         if ($def['volume']) {
-            $widget .= '._vol';
+            $widget .= '._spread';
         }
         if (!empty($def['css'])) {
             foreach ($def['css'] as $css) {

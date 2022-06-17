@@ -33,7 +33,7 @@ class SnippetInfo {
 
     actualize(data, callback = null) {
         this.snippetCode = data.code;
-        this.content = new lxsc.ContentMap(data.tree);
+        this.content = new lxsc.ContentMap(this, data.tree);
         if (data.images !== undefined)
             this.images = data.images;
         lx.dependencies.promiseModules(
