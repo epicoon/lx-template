@@ -23,13 +23,6 @@ class Respondent extends \lx\Respondent
 
     public function loadReferences(): ResponseInterface
     {
-        $info = lx::$app->jsModules->getModuleInfo('lx.Box');
-        $docBox = $info->getDocumentation();
-        $info = lx::$app->jsModules->getModuleInfo('lx.Rect');
-        $docRect = $info->getDocumentation();
-
-        $e = 1;
-
         $widgets = [];
         $positioningStategies = [];
         $modulesInfo = lx::$app->jsModules->getModulesInfo();

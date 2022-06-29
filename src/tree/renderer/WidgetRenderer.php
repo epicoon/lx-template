@@ -2,6 +2,7 @@
 
 namespace lx\template\tree\renderer;
 
+use lx;
 use lx\template\tree\TemplateNode;
 
 class WidgetRenderer extends NodeRenderer
@@ -104,18 +105,16 @@ class WidgetRenderer extends NodeRenderer
             return [null, null];
         }
 
-        //TODO размечать методы стратегий позиционирования в доках и брать инфу оттуда
-        $posNames = [
-            'align',
-            'stream',
-            'streamProportional',
-            'streamAutoSize',
-            'grid',
-            'gridProportional',
-            'gridStream',
-            'gridAdaptive',
-            'slot'
-        ];
+        $boxInfo = lx::$app->jsModules->getModuleInfo('lx.Box')->getDocumentation();
+        /** @var lx\JsClassDocumentation $boxInfo */
+        $boxInfo = $boxInfo['lx.Box'];
+        $methods = $boxInfo->getMethods();
+        $posNames = [];
+        foreach ($methods as $methodName => $method) {
+            if ($method->hasMarker('positioning')) {
+                $posNames[] = $methodName;
+            }
+        }
 
         $actionsList = [];
         $positioning = null;
