@@ -13,7 +13,9 @@ class WidgetNodeData extends NodeData
     private array $css = [];
     private bool $isVolume = false;
     private array $config = [];
+    private array $metaData = [];
     private array $actions = [];
+    private string $inner = '';
 
     function init(array $data): void
     {
@@ -24,7 +26,9 @@ class WidgetNodeData extends NodeData
         $this->css = $data['css'];
         $this->isVolume = $data['volume'];
         $this->config = $data['config'];
+        $this->metaData = $data['metaData'] ?? [];
         $this->actions = $data['actions'];
+        $this->inner = $data['inner'] ?? '';
     }
 
     function merge(array $data): void
@@ -43,11 +47,19 @@ class WidgetNodeData extends NodeData
             true
         );
 
+        $this->metaData = ArrayHelper::mergeRecursiveDistinct(
+            $this->metaData,
+            $data['metaData'] ?? [],
+            true
+        );
+
         $this->actions = ArrayHelper::mergeRecursiveDistinct(
             $this->actions,
             $data['actions'] ?? [],
             true
         );
+
+        $this->inner .= $data['inner'] ?? '';
     }
 
     function toArray(): array
@@ -60,7 +72,9 @@ class WidgetNodeData extends NodeData
             'css' => $this->css,
             'volume' => $this->isVolume,
             'config' => $this->config,
+            'metaData' => $this->metaData,
             'actions' => $this->actions,
+            'inner' => $this->inner,
         ];
     }
 }

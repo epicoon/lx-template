@@ -15,14 +15,14 @@ class TemplateParser implements FlightRecorderHolderInterface
 
     private TemplateNode $rootNode;
     private array $blocks = [];
-    private array $named = [];
+    private array $prototypes = [];
     private array $elements = [];
 
     public function parse(string $text): ?TemplateTree
     {
         $this->rootNode = TemplateNode::create();
         $this->blocks = [];
-        $this->named = [];
+        $this->prototypes = [];
         $this->elements = [];
 
         preg_match('/^(?:\r|\n|\r\n)(( |\t)*?)</', $text, $shift);
@@ -33,21 +33,24 @@ class TemplateParser implements FlightRecorderHolderInterface
 
         $text = preg_replace('/(\r\n|\r|\n)/', PHP_EOL, $text);
         $text .= PHP_EOL;
-        $preg = '/(^|\r|\n|\r\n)(<[\w\W]+?)(?=(\r|\n|\r\n)(\S|\s*$))/';
+        $preg = '/(?:^|\r|\n|\r\n)(<[\w\W]+?)(?:((?:\r|\n|\r\n)>[\w\W]+?)(?=(?:\r|\n|\r\n)(?:\S|\s*$))|(?=(?:\r|\n|\r\n)(?:\S|\s*$)))/';
         preg_match_all($preg, $text, $matches);
-        $sections = $matches[2];
+        $sections = [];
+        foreach ($matches[0] as $i => $match) {
+            $sections[] = $matches[1][$i] . $matches[2][$i];
+        }
         foreach ($sections as $section) {
             switch ($section[1]) {
                 case '#': $this->blocks[] = $section; break;
-                case '^': $this->named[] = $section; break;
-                case '@': $this->named[] = $section; break;
+                case '^': $this->prototypes[] = $section; break;
+                case '@': $this->prototypes[] = $section; break;
                 default: $this->elements[] = $section; break;
             }
         }
 
         try {
             $this->processBlocks();
-            $this->processNamed();
+            $this->processPrototypes();
             $this->processElements();
         } catch (\Exception $exception) {
             $this->addFlightRecord($exception->getMessage());
@@ -174,10 +177,10 @@ class TemplateParser implements FlightRecorderHolderInterface
         return $sortedBlocks;
     }
 
-    private function processNamed(): void
+    private function processPrototypes(): void
     {
         $named = [];
-        foreach ($this->named as $item) {
+        foreach ($this->prototypes as $item) {
             $arr = $this->splitText($item);
 
             $nameString = $arr['list'][0]['widget'];
@@ -191,7 +194,7 @@ class TemplateParser implements FlightRecorderHolderInterface
             $named[$name] = $node;
         }
 
-        $this->named = $named;
+        $this->prototypes = $named;
     }
 
     private function processElements(): void
@@ -230,8 +233,8 @@ class TemplateParser implements FlightRecorderHolderInterface
             $node = TemplateNode::createByParsed($nodeConfig);
             if ($node->isType(TemplateNode::TYPE_WIDGET)) {
                 $arr = $node->toArray();
-                if ($arr['widget'] != '_' && $arr['var'] && array_key_exists($arr['var'], $this->named)) {
-                    $ext = $this->named[$arr['var']]->getChild(0)->clone();
+                if ($arr['widget'] != '_' && $arr['var'] && array_key_exists($arr['var'], $this->prototypes)) {
+                    $ext = $this->prototypes[$arr['var']]->getChild(0)->clone();
                     $node->merge($ext);
                 }
             }
@@ -274,7 +277,7 @@ class TemplateParser implements FlightRecorderHolderInterface
                     'save' => '"',
                 ]);
             } else {
-                $stringData['modif'] = StringHelper::smartReplace($item, [
+                $stringData['tail'] = StringHelper::smartReplace($item, [
                     'search' => '\s+',
                     'replacement' => '',
                     'save' => '"',

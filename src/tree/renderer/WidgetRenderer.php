@@ -9,25 +9,30 @@ class WidgetRenderer extends NodeRenderer
 {
     private $lenLimit = 121;
 
+    protected function toArray(): array
+    {
+        return $this->node->toArray();
+    }
+
     protected function run(): void
     {
-        $node = $this->node;
-        $def = $node->toArray();
+        $def = $this->toArray();
 
-        $indent = str_repeat(self::INDENT, $node->getLevel());
+        $indent = str_repeat(self::INDENT, $this->node->getLevel());
         $widget = $this->renderWidget($def);
 
-        $this->code = $indent . $widget;
+        $config = $this->renderMap($def['config'], '()');
+        $metaData = $this->renderMap($def['metaData'], '{}');
 
-        $config = $this->renderConfig($def['config']);
-        if ($this->prettyMode && $config !== '') {
-            if (mb_strlen($this->code) + mb_strlen($config) <= $this->lenLimit) {
-                $this->code .= $config;
-            } else {
-                $this->code .= PHP_EOL . $indent . self::INDENT . $config;
-            }
-        } else {
-            $this->code .= $config;
+        $this->code = $indent . '<' . $widget
+            . ($config == '' ? '' : ' ' . $config)
+            . ($metaData == '' ? '' : ' ' . $metaData)
+            . '>';
+        if ($this->prettyMode && mb_strlen($this->code) > $this->lenLimit) {
+            $this->code = $indent . '<' . $widget
+                . ($config == '' ? '' : PHP_EOL . $indent . self::INDENT . $config)
+                . ($metaData == '' ? '' : PHP_EOL . $indent . self::INDENT . $metaData)
+                . PHP_EOL . $indent . '>';
         }
 
         list($actions, $positioning) = $this->renderActions($def['actions']);
@@ -55,17 +60,21 @@ class WidgetRenderer extends NodeRenderer
                 $this->code .= $positioning;
             }
         }
+
+        if ($def['inner'] != '') {
+            $this->code .= PHP_EOL . $indent . self::INDENT . $def['inner'];
+        }
     }
 
     private function renderWidget(array $def): string
     {
-        $widget = '<' . $def['widget'];
+        $widget = $def['widget'];
         if ($def['field'] || $def['key'] || $def['var'] || $def['volume'] || !empty($def['css'])) {
             $widget .= ':';
         }
 
         if ($def['field']) {
-            $widget .= '{f}' . $def['field'];
+            $widget .= '[f]' . $def['field'];
         }
         if ($def['key'] && $def['key'] !== $def['field']) {
             $widget .= '@' . $def['key'];
@@ -82,11 +91,10 @@ class WidgetRenderer extends NodeRenderer
                 $widget .= '.' . $css;
             }
         }
-        $widget .= '>';
         return $widget;
     }
 
-    private function renderConfig(array $config): string
+    private function renderMap(array $config, string $parentheses): string
     {
         if (empty($config)) {
             return '';
@@ -96,7 +104,7 @@ class WidgetRenderer extends NodeRenderer
         foreach ($config as $key => $value) {
             $params[] = "$key:$value";
         }
-        return '(' . implode(($this->prettyMode?', ':','), $params) . ')';
+        return $parentheses[0] . implode(($this->prettyMode ? ', ' : ','), $params) . $parentheses[1];
     }
 
     private function renderActions(array $actions): array
@@ -128,7 +136,7 @@ class WidgetRenderer extends NodeRenderer
                 }
             }
             $method = $action['method'];
-            $args = implode(($this->prettyMode?', ':','), $args);
+            $args = implode(($this->prettyMode ? ', ' : ','), $args);
             $str = ".{$method}({$args})";
             in_array($method, $posNames)
                 ? $positioning = $str

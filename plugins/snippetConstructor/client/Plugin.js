@@ -126,6 +126,8 @@ class Plugin extends lx.Plugin {
     }
 
     run() {
+        this.core = new lxsc.Core(this);
+
         this.initGuiNodes({
             pluginSelector: lxsc.gui.PluginSelector,
             pluginDisplayer: lxsc.gui.PluginDisplayer,
@@ -134,7 +136,6 @@ class Plugin extends lx.Plugin {
             newBoxDataForm: lxsc.gui.NewBoxDataForm,
         });
 
-        this.core = new lxsc.Core(this);
 
         
 

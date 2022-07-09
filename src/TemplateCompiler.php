@@ -36,8 +36,11 @@ class TemplateCompiler
     {
         $this->withOutput = ($outputName != '');
 
+        $func = 'function _out(key,name){if(!(key in __out__)){__out__[key]=name;}else{'
+            .'if(!lx.isArray(__out__[key]))__out__[key]=[__out__[key]];'
+            .'__out__[key].push(name)}}';
         $codeStart = ($this->withOutput)
-            ? "const $outputName=(()=>{let __out__={};"
+            ? "const $outputName=(()=>{let __out__={};$func"
             : '(()=>{';
 
         $blockFuncs = '';
@@ -125,9 +128,7 @@ class TemplateCompiler
     
     private function getOutString(string $key, string $varName): string
     {
-        return "if(!('{$key}' in __out__)){__out__['{$key}']=$varName;}else{"
-            ."if(!lx.isArray(__out__['{$key}']))__out__['{$key}']=[__out__['{$key}']];"
-            ."__out__['{$key}'].push($varName)}";
+        return "_out('{$key}',$varName);";
     }
 
     private function registerWidget($widget)

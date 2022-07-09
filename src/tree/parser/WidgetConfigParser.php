@@ -12,13 +12,13 @@ class WidgetConfigParser extends NodeConfigParser
         if ($type === null) {
             throw new \Exception('Wrong widget definition');
         }
-        $modif = $config['modif'] ?? [];
 
         $type = trim($type, '<>');
-//        $preg = '/^(.+?)(?:\:|$)((?:@|\^|{(?:[^}]+?)})[^\.]+)?(.+|$)/';
+
+        $initConfig = $this->extractMap('()', $type);
+        $metaData = $this->extractMap('{}', $type);
 
         $preg = '/^(.+?)(?:\:|$)([^\.]+)?(.+|$)/';
-
         preg_match_all($preg, $type, $matches);
 
         $widget = $matches[1][0];
@@ -29,11 +29,11 @@ class WidgetConfigParser extends NodeConfigParser
             ? null
             : $matches[2][0];
         if ($def) {
-            $defList = preg_split('/(@|\^|{[^}]+?})/', $def, null, PREG_SPLIT_DELIM_CAPTURE);
+            $defList = preg_split('/(@|\^|\[[^}]+?\])/', $def, null, PREG_SPLIT_DELIM_CAPTURE);
             for ($i = 1, $l = count($defList); $i < $l; $i+=2) {
                 $mark = $defList[$i];
                 $value = $defList[$i + 1];
-                if ($mark == '{f}' || $key == '{field}') {
+                if ($mark == '[f]' || $mark == '[field]') {
                     $field = $value;
                 } elseif ($mark == '@') {
                     $key = $value;
@@ -60,55 +60,76 @@ class WidgetConfigParser extends NodeConfigParser
         }
         unset($matches);
 
-        $result = [
+        $tail = $config['tail'] ?? '';
+        $actions = $this->extractActions($tail);
+
+        return [
             'widget' => $widget,
             'key' => $key,
             'field' => $field,
             'var' => $var,
             'css' => $css,
             'volume' => $isVolume,
-            'config' => [],
-            'actions' => [],
+            'config' => $initConfig,
+            'metaData' => $metaData,
+            'actions' => $actions,
+            'inner' => $tail,
         ];
+    }
 
-        if ($modif == '') {
-            return $result;
+    private function extractMap(string $parentheses, string &$type): array
+    {
+        $regexp = '/(?P<re>\\' . $parentheses[0] . '((?>[^\\' . $parentheses[0]
+            . '\\' . $parentheses[1] . ']+)|(?P>re))*\\' . $parentheses[1] . ')(.*)/';
+        preg_match($regexp, $type, $match);
+        if (empty($match)) {
+            return [];
         }
 
-        if ($modif[0] == '(') {
-            $regexp = '/(?P<re>\(((?>[^\(\)]+)|(?P>re))*\))(.*)/';
-            preg_match_all($regexp, $modif, $matches);
-            $config = $matches['re'][0];
-            unset($matches);
-            $actions = str_replace($config, '', $modif);
+        $map = $match['re'];
+        $type = str_replace($map, '', $type);
 
-            $config = preg_replace('/^\(/', '', $config);
-            $config = preg_replace('/\)$/', '', $config);
-            $config = StringHelper::smartSplit($config, [
-                'delimiter' => ',',
-                'save' => ['()', '"', '[]', '{}'],
-            ]);
-            $temp = [];
-            foreach ($config as $item) {
-                if (strpos($item, ':') === false) {
-                    $temp[$item] = $item;
-                } else {
-                    preg_match_all('/([^:]+?):(.+)/', $item, $matches);
-                    $temp[$matches[1][0]] = $matches[2][0];
-                    unset($matches);
-                }
+        $map = preg_replace('/^\\' . $parentheses[0] . '/', '', $map);
+        $map = preg_replace('/\\' . $parentheses[1] . '$/', '', $map);
+        $map = StringHelper::smartSplit($map, [
+            'delimiter' => ',',
+            'save' => ['()', '"', '[]', '{}'],
+        ]);
+        $temp = [];
+        foreach ($map as $item) {
+            if (strpos($item, ':') === false) {
+                $temp[$item] = $item;
+            } else {
+                preg_match_all('/([^:]+?):(.+)/', $item, $matches);
+                $temp[$matches[1][0]] = $matches[2][0];
+                unset($matches);
             }
-            $config = $temp;
-        } else {
-            $config = [];
-            $actions = $modif;
+        }
+
+        return $temp;
+    }
+
+    private function extractActions(string &$actions): array
+    {
+        if ($actions == '') {
+            return [];
         }
 
         preg_match_all('/\.([\w_][\w\d_]*?)(?P<re>\(((?>[^\(\)]+)|(?P>re))*\))/', $actions, $matches);
-        $actions = [];
+        $actionsList = [];
         for ($i=0,$l=count($matches[1]); $i<$l; $i++) {
             $method = $matches[1][$i];
             $args = $matches['re'][$i];
+            $actions = str_replace($matches[0][$i], '', $actions);
+            if ($args == '()') {
+                $actionsList[] = [
+                    'method' => $method,
+                    'argsType' => null,
+                    'args' => [],
+                ];
+                continue;
+            }
+
             $args = preg_replace('/^\(/', '', $args);
             $args = preg_replace('/\)$/', '', $args);
             $args = StringHelper::smartSplit($args, [
@@ -131,15 +152,13 @@ class WidgetConfigParser extends NodeConfigParser
                 $args = $temp;
             }
 
-            $actions[] = [
+            $actionsList[] = [
                 'method' => $method,
                 'argsType' => $argsType,
                 'args' => $args,
             ];
         }
 
-        $result['config'] = $config;
-        $result['actions'] = $actions;
-        return $result;
+        return $actionsList;
     }
 }

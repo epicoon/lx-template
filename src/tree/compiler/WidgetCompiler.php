@@ -6,15 +6,10 @@ class WidgetCompiler extends NodeCompiler
 {
     protected function run(): void
     {
-        $node = $this->node;
-        $def = $node->toArray();
-
-        $code = $this->getInitCode($def);
-        if (!empty($def['actions'])) {
-            $code .= $this->getActionsCode($def);
-        }
-        
-        $this->code = $code;
+        $def = $this->node->toArray();
+        $this->code = $this->getInitCode($def)
+            . $this->getMetaDataCode($def)
+            . $this->getActionsCode($def);
     }
 
     private function getInitCode(array $def): string
@@ -39,8 +34,12 @@ class WidgetCompiler extends NodeCompiler
                 unset($item);
                 $config[] = 'css:[' . implode(',', $def['css']) . ']';
             }
-            if (!empty($def['config'])) {
-                foreach ($def['config'] as $key => $value) {
+            $defConfig = $def['config'] ?? [];
+            if ($def['inner'] != '') {
+                $defConfig['html'] = '\'' . $def['inner'] . '\'';
+            }
+            if (!empty($defConfig)) {
+                foreach ($defConfig as $key => $value) {
                     $config[] = "$key:$value";
                 }
             }
@@ -49,7 +48,9 @@ class WidgetCompiler extends NodeCompiler
         $init .= ');';
 
         if ($def['var'] || $def['field'] || $def['key']
-            || !empty($def['actions']) || !empty($this->node->getChildren())
+            || !empty($def['metaData'])
+            || !empty($def['actions'])
+            || !empty($this->node->getChildren())
         ) {
             $init = "var {$this->var}=" . $init;
         }
@@ -57,8 +58,26 @@ class WidgetCompiler extends NodeCompiler
         return $init;
     }
 
+    private function getMetaDataCode(array $def): string
+    {
+        if (empty($def['metaData'])) {
+            return '';
+        }
+
+        $code = '';
+        foreach ($def['metaData'] as $key => $value) {
+            $code .= "{$this->var}.$key=$value;";
+        }
+
+        return $code;
+    }
+
     private function getActionsCode(array $def): string
     {
+        if (empty($def['actions'])) {
+            return '';
+        }
+
         $code = '';
         foreach ($def['actions'] as $action) {
             $code .= "{$this->var}." . $action['method'] . '(';
