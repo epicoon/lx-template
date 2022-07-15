@@ -5,7 +5,7 @@ namespace lx\template\plugins\snippetConstructor\server;
 use lx;
 use lx\File;
 use lx\JsCompiler;
-use lx\PackageBrowser;
+use lx\ServiceBrowser;
 use lx\Plugin;
 use lx\ResponseInterface;
 use lx\Service;
@@ -49,7 +49,7 @@ class Respondent extends \lx\Respondent
     
     public function getPluginsList(): ResponseInterface
     {
-        $services = PackageBrowser::getServicesList();
+        $services = ServiceBrowser::getServicesList();
 
         $result = [];
         foreach ($services as $serviceName => $service) {
