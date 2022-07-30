@@ -1,6 +1,5 @@
+# --- Server ---
 server: lx\template\plugins\snippetConstructor\server\Plugin
-client: client/Plugin.js
-
 respondents:
   Respondent: Respondent
 
@@ -11,3 +10,22 @@ images: assets/images
 
 cacheType: smart
 #cacheType: build
+
+# --- Client ---
+client: client/Plugin.js
+require:
+  - 'Core.js'
+  - '-R css/'
+  - '-R gui/'
+
+core: lxsc.Core
+
+cssAssets:
+  - lxsc.css.MainAsset
+
+guiNodes:
+  pluginSelector: lxsc.gui.PluginSelector
+  pluginDisplayer: lxsc.gui.PluginDisplayer
+  snippetsAggregator: lxsc.gui.SnippetsAggregator
+  contentNode: lxsc.gui.ContentNode
+  newBoxDataForm: lxsc.gui.NewBoxDataForm

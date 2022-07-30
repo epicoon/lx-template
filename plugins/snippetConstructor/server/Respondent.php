@@ -7,21 +7,21 @@ use lx\File;
 use lx\JsCompiler;
 use lx\ServiceBrowser;
 use lx\Plugin;
-use lx\ResponseInterface;
+use lx\HttpResponseInterface;
 use lx\Service;
 use lx\template\TemplateParser;
 use lx\template\tree\TemplateTree;
 
 class Respondent extends \lx\Respondent
 {
-    public function test($map): ResponseInterface
+    public function test($map): HttpResponseInterface
     {
 
 
         return $this->prepareResponse('ok');
     }
 
-    public function loadReferences(): ResponseInterface
+    public function loadReferences(): HttpResponseInterface
     {
         $widgets = [];
         $positioningStategies = [];
@@ -47,7 +47,7 @@ class Respondent extends \lx\Respondent
         ]);
     }
     
-    public function getPluginsList(): ResponseInterface
+    public function getPluginsList(): HttpResponseInterface
     {
         $services = ServiceBrowser::getServicesList();
 
@@ -67,7 +67,7 @@ class Respondent extends \lx\Respondent
         return $this->prepareResponse($result);
     }
 
-    public function getPluginData(string $pluginName): ResponseInterface
+    public function getPluginData(string $pluginName): HttpResponseInterface
     {
         $plugin = lx::$app->getPlugin($pluginName);
         if (!$plugin) {
@@ -78,7 +78,7 @@ class Respondent extends \lx\Respondent
         return $this->prepareResponse($data);
     }
 
-    public function getSnippetData(string $pluginName, string $snippetPath): ResponseInterface
+    public function getSnippetData(string $pluginName, string $snippetPath): HttpResponseInterface
     {
         $plugin = lx::$app->getPlugin($pluginName);
         if (!$plugin) {
@@ -110,14 +110,14 @@ class Respondent extends \lx\Respondent
         ]);
     }
     
-    public function actualizeSnippet(string $pluginName, string $snippetPath, array $map): ResponseInterface
+    public function actualizeSnippet(string $pluginName, string $snippetPath, array $map): HttpResponseInterface
     {
         return $this->prepareResponse(
             $this->recalculateSnippet($pluginName, $snippetPath, $map, false)
         );
     }
 
-    public function saveSnippet(string $pluginName, string $snippetPath, array $map): ResponseInterface
+    public function saveSnippet(string $pluginName, string $snippetPath, array $map): HttpResponseInterface
     {
         return $this->prepareResponse(
             $this->recalculateSnippet($pluginName, $snippetPath, $map, true)
