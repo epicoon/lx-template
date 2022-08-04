@@ -33,7 +33,12 @@ class Factory
         if (preg_match('/^<#/', $widget)) {
             return TemplateNode::TYPE_BLOCK;
         }
-        
+
+        // Prototype
+        if (preg_match('/^<_/', $widget)) {
+            return TemplateNode::TYPE_WIDGET;
+        }
+
         $widgetNames = self::getWidgetNames();
         foreach ($widgetNames as $widgetName) {
             if (preg_match('/^<' . addcslashes($widgetName, '.') . '/', $widget)) {

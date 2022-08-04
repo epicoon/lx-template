@@ -106,7 +106,7 @@ class Respondent extends \lx\Respondent
             'tree' => $tree->toArray(),
             'code' => $code,
             'dependencies' => $dependencies,
-            'images' => $plugin->getImagePathes(),
+            'images' => (new lx\PluginAssetProvider($plugin))->getImagePaths(),
         ]);
     }
     

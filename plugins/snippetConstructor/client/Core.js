@@ -78,7 +78,7 @@ function __addSnippet(self, pluginName, snippetPath, snippetData) {
 		snippetInfo = new lxsc.SnippetInfo(self, pluginName, snippetPath);
 	self.snippets[snippetKey] = snippetInfo;
 	snippetInfo.actualize(snippetData, ()=>{
-		self.plugin.trigger('e-snippetAdded', {snippetInfo: self.snippets[snippetKey]});
+		self.plugin.trigger('e-snippetAdded', {snippetInfo});
 		self.selectSnippet(pluginName, snippetPath);
 	});
 }
