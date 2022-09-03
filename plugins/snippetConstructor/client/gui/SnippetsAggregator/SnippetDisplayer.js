@@ -37,7 +37,7 @@ class SnippetDisplayer {
         rootBox.clear();
         rootBox.setImagesMap(this.snippetInfo.images);
         rootBox.begin();
-        lx._f.createAndCallFunction(this.snippetInfo.snippetCode);
+        lx.app.functionHelper.createAndCallFunction(this.snippetInfo.snippetCode);
         rootBox.end();
     }
     

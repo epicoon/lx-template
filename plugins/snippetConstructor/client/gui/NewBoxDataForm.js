@@ -54,7 +54,7 @@ class NewBoxDataForm extends lx.GuiNode {
         widget->>butAddElem.click(()=>{
             const widgetDropbox = widget->>elemType;
             if (widgetDropbox.value() === null) {
-                lx.Tost.warning('Select a widget type');
+                lx.tostWarning('Select a widget type');
                 return;
             }
             this.promise.triggerAddElement(widgetDropbox.selectedText());
@@ -64,7 +64,7 @@ class NewBoxDataForm extends lx.GuiNode {
         widget->>butAddBlock.click(()=>{
             const blockNameDropbox = widget->>blockName;
             if (blockNameDropbox.value() === null) {
-                lx.Tost.warning('Select a block name');
+                lx.tostWarning('Select a block name');
                 return;
             }
             this.promise.triggerAddBlock(blockNameDropbox.selectedText());

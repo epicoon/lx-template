@@ -36,7 +36,7 @@ class SnippetInfo {
         this.content = new lxsc.ContentMap(this, data.tree);
         if (data.images !== undefined)
             this.images = data.images;
-        lx.dependencies.promiseModules(
+        lx.app.dependencies.promiseModules(
             data.dependencies.modules || [],
             ()=>{
                 if (this.displayer) {

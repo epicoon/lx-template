@@ -17,7 +17,7 @@ class Core extends lx.PluginCore {
 	selectPlugin(pluginName) {
 		^Respondent.getPluginData(pluginName).then(res=>{
 			if (res.success === false) {
-				lx.Tost.error(res.data);
+				lx.tostError(res.data);
 				return;
 			}
 
@@ -34,7 +34,7 @@ class Core extends lx.PluginCore {
 
 		^Respondent.getSnippetData(this.selectedPlugin, snippetPath).then(res=>{
 			if (res.success === false) {
-				lx.Tost.error(res.data);
+				lx.tostError(res.data);
 				return;
 			}
 

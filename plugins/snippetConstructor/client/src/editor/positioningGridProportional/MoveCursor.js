@@ -39,7 +39,7 @@ function __move(self, event, move) {
 
 	var moveBut = self.box.add(lx.Box, boxConfig);
 	moveBut.move(moveConfig);
-	lx.move.call(moveBut, event);
+	lx.app.dragAndDrop.move.call(moveBut, event);
 
 	moveBut.__moveCursor = self;
 	moveBut.on('move', __onMove)
