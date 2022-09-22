@@ -36,16 +36,16 @@ class SnippetInfo {
         this.content = new lxsc.ContentMap(this, data.tree);
         if (data.images !== undefined)
             this.images = data.images;
-        lx.app.dependencies.promiseModules(
-            data.dependencies.modules || [],
-            ()=>{
+        lx.app.loader.loadModules({
+            modules: data.dependencies.modules || [],
+            callback: ()=>{
                 if (this.displayer) {
                     this.displayer.actualize();
                     this.core.getPlugin().trigger('e-snippetActualized', {snippetInfo: this});
                 }
                 if (callback) callback();
             }
-        );
+        });
     }
 
     getKey() {
