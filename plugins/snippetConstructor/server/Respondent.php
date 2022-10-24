@@ -99,6 +99,7 @@ class Respondent extends \lx\Respondent
 
         $code = "#lx:tpl-begin;$text#lx:tpl-end;";
         $compiler = new JsCompiler();
+        $compiler->setBuildModules(false);
         $code = $compiler->compileCode($code, $file->getPath());
         $dependencies = $compiler->getDependencies()->toArray();
         
@@ -176,6 +177,7 @@ class Respondent extends \lx\Respondent
 
         $code = ($tplCode === '') ? '' : "#lx:tpl-begin;$tplCode#lx:tpl-end;";
         $compiler = new JsCompiler();
+        $compiler->setBuildModules(false);
         $code = $compiler->compileCode($code, $file->getPath());
         $dependencies = $compiler->getDependencies()->toArray();
 
