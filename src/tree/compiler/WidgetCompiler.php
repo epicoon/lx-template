@@ -15,35 +15,49 @@ class WidgetCompiler extends NodeCompiler
     private function getInitCode(array $def): string
     {
         $init = "new {$def['widget']}(";
-        if ($def['key'] || $def['field'] || $def['volume'] || !empty($def['css']) || !empty($def['config'])) {
-            $init .= '{';
+        if ($def['id'] || $def['name'] || $def['key'] || $def['field']
+            || $def['volume'] || !empty($def['css']) || !empty($def['config'])
+        ) {
             $config = [];
-            if ($def['key']) {
-                $config[] = "key:'{$def['key']}'";
+
+            $fields = ['id', 'name', 'key', 'field'];
+            foreach ($fields as $field) {
+                if ($def[$field]) {
+                    $val = $def[$field];
+                    $val = preg_match('/^\{\{.+\}\}$/', $val)
+                        ? trim($val, '}{')
+                        : "'$val'";
+                    $config[] = "$field:$val";
+                }
             }
-            if ($def['field']) {
-                $config[] = "field:'{$def['field']}'";
-            }
+
             if ($def['volume'] && !array_key_exists('geom', $def['config'])) {
                 $config[] = 'geom:true';
             }
+
             if (!empty($def['css'])) {
                 foreach ($def['css'] as &$item) {
-                    $item = "'$item'";
+                    $item = preg_match('/^\{\{.+\}\}$/', $item)
+                        ? trim($item, '}{')
+                        : "'$item'";
                 }
                 unset($item);
                 $config[] = 'css:[' . implode(',', $def['css']) . ']';
             }
+
             $defConfig = $def['config'] ?? [];
             if ($def['inner'] != '') {
-                $defConfig['html'] = '\'' . $def['inner'] . '\'';
+                $html = trim($def['inner'], '"');
+                $html = preg_replace('/\{\{(.+?)\}\}/', '\'+$1+\'', $html);
+                $defConfig['html'] = "'$html'";
             }
             if (!empty($defConfig)) {
                 foreach ($defConfig as $key => $value) {
                     $config[] = "$key:$value";
                 }
             }
-            $init .= implode(',', $config) . '}';
+
+            $init .= '{' . implode(',', $config) . '}';
         }
         $init .= ');';
 
@@ -64,9 +78,9 @@ class WidgetCompiler extends NodeCompiler
             return '';
         }
 
-        $code = '';
+        $code = "{$this->var}.data={};";
         foreach ($def['metaData'] as $key => $value) {
-            $code .= "{$this->var}.$key=$value;";
+            $code .= "{$this->var}.data['$key']=$value;";
         }
 
         return $code;

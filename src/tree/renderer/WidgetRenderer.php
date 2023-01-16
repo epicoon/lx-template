@@ -73,8 +73,14 @@ class WidgetRenderer extends NodeRenderer
             $widget .= ':';
         }
 
+        if ($def['id']) {
+            $widget .= '[id:' . $def['id'] . ']';
+        }
+        if ($def['name']) {
+            $widget .= '[n:' . $def['name'] . ']';
+        }
         if ($def['field']) {
-            $widget .= '[f]' . $def['field'];
+            $widget .= '[f:' . $def['field'] . ']';
         }
         if ($def['key'] && $def['key'] !== $def['field']) {
             $widget .= '@' . $def['key'];

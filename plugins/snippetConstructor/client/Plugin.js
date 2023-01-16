@@ -1,7 +1,5 @@
 #lx:use lx.ActiveBox;
 
-#lx:require -R src/;
-
 class Plugin extends lx.Plugin {
     run() {
         //TODO --dev

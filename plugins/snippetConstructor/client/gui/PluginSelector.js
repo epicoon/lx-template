@@ -5,7 +5,7 @@ class PluginSelector extends lx.GuiNode {
 	open(data) {
 		this.box.show();
 		var tree = lx.Tree.createFromObject(data);
-		this.box->tree.setData(tree);
+		this.box->tree.setTree(tree);
 	}
 
 	close() {

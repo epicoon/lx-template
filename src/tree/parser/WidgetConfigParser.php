@@ -15,13 +15,17 @@ class WidgetConfigParser extends NodeConfigParser
 
         $type = trim($type, '<>');
 
+        $type = preg_replace('/\{\{(.+?)\}\}/', '#<#$1#>#', $type);
         $initConfig = $this->extractMap('()', $type);
         $metaData = $this->extractMap('{}', $type);
+        $type = preg_replace('/#<#(.+?)#>#/', '{{$1}}', $type);
 
         $preg = '/^(.+?)(?:\:|$)([^\.]+)?(.+|$)/';
         preg_match_all($preg, $type, $matches);
 
         $widget = $matches[1][0];
+        $id = null;
+        $name = null;
         $var = null;
         $field = null;
         $key = null;
@@ -29,13 +33,31 @@ class WidgetConfigParser extends NodeConfigParser
             ? null
             : $matches[2][0];
         if ($def) {
-            $defList = preg_split('/(@|\^|\[[^}]+?\])/', $def, null, PREG_SPLIT_DELIM_CAPTURE);
+            $reg = '/\[[^]]+?\]/';
+            preg_match_all($reg, $def, $idents);
+            $idents = $idents[0];
+            if (!empty($idents)) {
+                $def = preg_replace($reg, '', $def);
+                foreach ($idents as $ident) {
+                    $ident = explode(':', trim($ident, ']['));
+                    //TODO id count !== 2
+                    $value = $ident[1];
+                    $ident = $ident[0];
+                    if ($ident == 'f' || $ident == 'field') {
+                        $field = $value;
+                    } elseif ($ident == 'n' || $ident == 'name') {
+                        $name = $value;
+                    } elseif ($ident == 'id') {
+                        $id = $value;
+                    }
+                }
+            }
+
+            $defList = preg_split('/(@|\^)/', $def, null, PREG_SPLIT_DELIM_CAPTURE);
             for ($i = 1, $l = count($defList); $i < $l; $i+=2) {
                 $mark = $defList[$i];
                 $value = $defList[$i + 1];
-                if ($mark == '[f]' || $mark == '[field]') {
-                    $field = $value;
-                } elseif ($mark == '@') {
+                if ($mark == '@') {
                     $key = $value;
                 } elseif ($mark == '^') {
                     $var = $value;
@@ -65,6 +87,8 @@ class WidgetConfigParser extends NodeConfigParser
 
         return [
             'widget' => $widget,
+            'id' => $id,
+            'name' => $name,
             'key' => $key,
             'field' => $field,
             'var' => $var,

@@ -7,6 +7,8 @@ use lx\ArrayHelper;
 class WidgetNodeData extends NodeData
 {
     private string $widget = '';
+    private ?string $id = null;
+    private ?string $name = null;
     private ?string $key = null;
     private ?string $var = null;
     private ?string $field = null;
@@ -20,6 +22,8 @@ class WidgetNodeData extends NodeData
     function init(array $data): void
     {
         $this->widget = $data['widget'];
+        $this->id = $data['id'];
+        $this->name = $data['name'];
         $this->key = $data['key'];
         $this->var = $data['var'];
         $this->field = $data['field'];
@@ -66,6 +70,8 @@ class WidgetNodeData extends NodeData
     {
         return [
             'widget' => $this->widget,
+            'id' => $this->id,
+            'name' => $this->name,
             'key' => $this->key,
             'var' => $this->var,
             'field' => $this->field,

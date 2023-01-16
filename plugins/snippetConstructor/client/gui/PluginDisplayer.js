@@ -12,7 +12,7 @@ class PluginDisplayer extends lx.GuiNode {
 
     setSnippetsList(list) {
         let tree = lx.Tree.createFromObject(list);
-        this.box->>snippetsTree.setData(tree);
+        this.box->>snippetsTree.setTree(tree);
     }
 
     init() {
@@ -189,8 +189,8 @@ function __getLeafByNode(self, node) {
 }
 
 function __actualizeSnippet(self, snippetInfo) {
-    self.getContentTree().setData(snippetInfo.content.getRoot());
-    self.getBlocksTree().setData(snippetInfo.content.getBlocks());
+    self.getContentTree().setTree(snippetInfo.content.getRoot());
+    self.getBlocksTree().setTree(snippetInfo.content.getBlocks());
 
     const metaData = self.getSnippetMetaData(snippetInfo.getKey());
     __actualizeContentMarking(snippetInfo, metaData.content);

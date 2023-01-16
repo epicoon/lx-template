@@ -13,10 +13,12 @@ cacheType: smart
 
 # --- Client ---
 client: client/Plugin.js
+requireForClient:
+  - 'client/Core.js'
+  - '-R client/gui/'
+  - '-R client/src/'
 require:
-  - 'Core.js'
-  - '-R css/'
-  - '-R gui/'
+  - '-R client/css/'
 
 core: lxsc.Core
 
