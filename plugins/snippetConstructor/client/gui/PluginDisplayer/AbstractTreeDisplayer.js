@@ -21,7 +21,7 @@ class AbstractTreeDisplayer {
                 content = parentBoxData.getContentMap();
 
             if (parentNode === content.getBlocks()) {
-                plugin.root->inputPopup.open('New block name')
+                lx.InputPopup.open('New block name')
                     .confirm(newBlockName=>
                         __addBoxData(this, parentNode, lxsc.ContentMap.TYPE_ROOT_BLOCK, {name: newBlockName})
                     ).reject(()=>this.tree.breakAdding());

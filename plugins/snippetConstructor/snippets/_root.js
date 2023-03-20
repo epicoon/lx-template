@@ -79,4 +79,3 @@
 
 
 #lx:use lx.InputPopup;
-new lx.InputPopup();
