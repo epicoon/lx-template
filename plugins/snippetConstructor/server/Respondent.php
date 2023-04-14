@@ -3,24 +3,19 @@
 namespace lx\template\plugins\snippetConstructor\server;
 
 use lx;
+use lx\Directory;
 use lx\File;
 use lx\JsCompiler;
 use lx\ServiceBrowser;
 use lx\Plugin;
 use lx\HttpResponseInterface;
 use lx\Service;
+use lx\template\TemplateRenderer;
 use lx\template\TemplateParser;
 use lx\template\tree\TemplateTree;
 
 class Respondent extends \lx\Respondent
 {
-    public function test($map): HttpResponseInterface
-    {
-
-
-        return $this->prepareResponse('ok');
-    }
-
     public function loadReferences(): HttpResponseInterface
     {
         $widgets = [];
@@ -125,6 +120,45 @@ class Respondent extends \lx\Respondent
         );
     }
 
+    public function createSnippetFile(string $pluginName, string $snippetPath, bool $isFolder): HttpResponseInterface
+    {
+        $plugin = lx::$app->getPlugin($pluginName);
+        if (!$plugin) {
+            return $this->prepareErrorResponse("Plugin $pluginName not found");
+        }
+
+        $file = $plugin->findFile($snippetPath);
+        if ($file) {
+            return $this->prepareErrorResponse($isFolder ? 'Folder already exists' : 'Snippet already exists');
+        }
+
+        if ($isFolder) {
+            $plugin->directory->makeDirectory($snippetPath);
+        } else {
+            $file = $plugin->directory->makeFile($snippetPath);
+            $file->getParentDir()->make();
+            $file->put('');
+        }
+
+        return $this->prepareResponse('ok');
+    }
+
+    public function deleteSnippetFile(string $pluginName, string $snippetPath): HttpResponseInterface
+    {
+        $plugin = lx::$app->getPlugin($pluginName);
+        if (!$plugin) {
+            return $this->prepareErrorResponse("Plugin $pluginName not found");
+        }
+
+        $file = $plugin->findFile($snippetPath);
+        if (!$file) {
+            return $this->prepareErrorResponse('Snippet does not exist');
+        }
+
+        $file->remove();
+        return $this->prepareResponse('ok');
+    }
+
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * PRIVATE
@@ -147,12 +181,10 @@ class Respondent extends \lx\Respondent
         $dirs = $plugin->conductor->getSnippetDirectories();
         $pluginData = [];
         foreach ($dirs as $dir) {
-            $files = $dir->getAllFiles('*.lxtpl');
-            $fileNames = [];
-            /** @var File $file */
-            foreach ($files as $file) {
-                $fileNames[] = $file->getRelativePath($dir);
-            }
+            $fileNames = $dir->getContentTree([
+                'fileMask' => '*.lxtpl',
+                'findType' => Directory::FIND_NAME,
+            ]);
 
             $pluginData[$dir->getName()] = $fileNames;
         }
@@ -172,7 +204,7 @@ class Respondent extends \lx\Respondent
         }
 
         $tree = TemplateTree::createFromArray($map);
-        $renderer = new lx\template\TemplateRenderer($tree);
+        $renderer = new TemplateRenderer($tree);
         $tplCode = $renderer->render(true);
 
         $code = ($tplCode === '') ? '' : "#lx:tpl-begin;$tplCode#lx:tpl-end;";

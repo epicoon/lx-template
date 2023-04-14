@@ -51,7 +51,7 @@
 #lx:tpl-begin;
 <lx.Box:@pluginSelector._spread>.style('z-index',5000).hide()
 	<lx.Box:@back._spread>.fill('black').opacity(0.5)
-	<lx.TreeBox:@tree (geom:[25,20,50,50])>
+	<lx.TreeBox:@tree.lxsc-Box (geom:[25,20,50,50])>
 #lx:tpl-end;
 
 

@@ -108,9 +108,7 @@ function __addBoxData(self, parentNode, type, data) {
         parentBoxData = parentNode.data,
         content = parentBoxData.getContentMap(),
         boxData = content.createBoxDataBlank(type, data),
-        newNode = self.tree.resumeAdding({
-            newNodeAttributes: { data: boxData }
-        });
+        newNode = self.tree.resumeAdding({ data: boxData });
     boxData.node = newNode;
     parentBoxData.addChild(boxData);
     plugin.trigger('e-actualizeSnippet');

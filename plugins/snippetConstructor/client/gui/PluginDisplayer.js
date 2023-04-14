@@ -1,3 +1,6 @@
+#lx:use lx.ConfirmPopup;
+#lx:use lx.InputPopup;
+
 #lx:require -R PluginDisplayer/;
 
 let _showSnippets = true;
@@ -7,6 +10,7 @@ class PluginDisplayer extends lx.GuiNode {
     get box() { return this.getWidget(); }
 
     setPlugin(pluginName) {
+        this.pluginName = pluginName;
         this.box->>pluginName.html(pluginName)
     }
 
@@ -16,6 +20,7 @@ class PluginDisplayer extends lx.GuiNode {
     }
 
     init() {
+        this.pluginName = null;
         this.snippetsMetaData = {};
 
         // Кнопки актуализации выбранного сниппета
@@ -30,6 +35,8 @@ class PluginDisplayer extends lx.GuiNode {
         // Структура выбранного сниппета
         this.contentTreeDisplayer = new ContentTreeDisplayer(this);
         this.blocksTreeDisplayer = new BlocksTreeDisplayer(this);
+
+        __initSnippetsTree(this);
     }
 
     initHandlers() {
@@ -47,21 +54,6 @@ class PluginDisplayer extends lx.GuiNode {
             _showSnippets = !_showSnippets;
             widget->>snippetsLabel.text('Snippets ' + (_showSnippets ? '&#9650;' : '&#9660;'));
             widget->>snippetsWrapper.style('display', _showSnippets ? null : 'none');
-        });
-
-        // Дерево сниппетов выбранного плагина
-        const snippetsTree = widget->>snippetsTree;
-        snippetsTree.setLeafsRight(snippetsTree.step);
-        snippetsTree.setLeafRenderer(leaf=>{
-            let node = leaf.node;
-            leaf->label.text(node.data.value || node.data.key);
-            if (node.data.value) {
-                leaf->label.style('cursor', 'pointer');
-                leaf->label.click(() => {
-                    let snippetPath = node.root.data.key + '/' + node.data.value;
-                    this.getPlugin().core.loadSnippet(snippetPath);
-                });
-            }
         });
 
         // Кнопки актуализации выбранного сниппета
@@ -168,6 +160,65 @@ class PluginDisplayer extends lx.GuiNode {
  * PRIVATE
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+function __initSnippetsTree(self) {
+    const snippetsTree = self.getWidget()->>snippetsTree;
+    snippetsTree.setLeafsRightForButtons(2);
+    snippetsTree.setLeafRenderer(leaf=>{
+
+
+        console.log(leaf);
+
+        let node = leaf.node;
+        leaf->label.text(node.data.value || node.data.key);
+        if (node.data.value) {
+            leaf->label.style('cursor', 'pointer');
+            leaf->label.click(() => {
+                self.getPlugin().core.loadSnippet(__getSnippetPath(node.root, node.data.value));
+            });
+            leaf.createChild();
+            leaf.createDropButton();
+        } else if (node.data.hasContent) {
+            leaf.createAddButton({key: 'newFolder', css: 'lxsc-tree-but-folder'});
+            leaf.createAddButton({key: 'newSnippet', css: 'lxsc-tree-but-file'});
+        }
+    });
+    snippetsTree.beforeAddLeaf(function (parentNode) {
+        const isFolder = (this.key == 'newFolder');
+        snippetsTree.holdAdding();
+        lx.InputPopup.open(isFolder ? 'New folder name' : 'New snippet name')
+            .confirm(name => {
+                if (!isFolder && !name.match(/\.lxtpl$/)) name += '.lxtpl';
+                let path = __getSnippetPath(parentNode, name);
+                ^Respondent.createSnippetFile(self.pluginName, path, isFolder).then(res=>{
+                    isFolder
+                        ? snippetsTree.resumeAdding({data: {key: name, hasContent: true}})
+                        : snippetsTree.resumeAdding({data: {value: name}});
+                }).catch(res=>{
+                    lx.tostWarning(res.error_details);
+                    snippetsTree.breakAdding();
+                });
+            })
+            .reject(()=>snippetsTree.breakAdding());
+    });
+    snippetsTree.beforeDropLeaf(leaf=> {
+        snippetsTree.holdDropping();
+        lx.ConfirmPopup.open('Are you sure you want to delete this snippet?')
+            .confirm(()=>{
+                let node = leaf.node,
+                    path = __getSnippetPath(node.root, node.data.value);
+                ^Respondent.deleteSnippetFile(self.pluginName, path).then(res=>{
+                    snippetsTree.resumeDropping();
+                }).catch(res=>{
+                    lx.tostWarning(res.error_details);
+                    snippetsTree.breakDropping();
+                });
+            })
+            .reject(()=>{
+                snippetsTree.breakDropping();
+            });
+    });
+}
+
 function __actualizeLeafCss(self, node, add) {
     const leaf = __getLeafByNode(self, node);
     if (!leaf) return;
@@ -210,4 +261,14 @@ function __actualizeContentMarking(snippetInfo, show) {
     show
         ? snippetInfo.getRootBox().getChildren(true).forEach(child=>child.addClass('lxsc-content'))
         : snippetInfo.getRootBox().getChildren(true).forEach(child=>child.removeClass('lxsc-content'));
+}
+
+function __getSnippetPath(rootNode, snippetName) {
+    let pathArr = [],
+        temp = rootNode;
+    while (temp && temp.data && temp.data.key) {
+        pathArr.push(temp.data.key);
+        temp = temp.root;
+    }
+    return pathArr.reverse().join('/') + '/' + snippetName;
 }

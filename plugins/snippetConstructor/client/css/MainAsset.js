@@ -65,6 +65,20 @@ class MainAsset extends lx.PluginCssAsset {
             color: css.preset.widgetIconColor,
             backgroundColor: css.preset.hotMainColor,
         });
+        css.addClass('lxsc-tree-but-folder', {
+            '@icon': ['\\1F4C1', {fontSize:10, paddingBottom:'0px'}],
+            '@clickable': true,
+            borderRadius: css.preset.borderRadius,
+            color: css.preset.widgetIconColor,
+            backgroundColor: css.preset.checkedMainColor,
+        });
+        css.addClass('lxsc-tree-but-file', {
+            '@icon': ['\\1F5D2', {fontSize:10, paddingBottom:'0px'}],
+            '@clickable': true,
+            borderRadius: css.preset.borderRadius,
+            color: css.preset.widgetIconColor,
+            backgroundColor: css.preset.checkedMainColor,
+        });
 
         // Current snippet displayer
         css.addClass('lxsc-content', {
