@@ -91,7 +91,7 @@ class TemplateParser implements FlightRecorderHolderInterface
         foreach ($blocks as $block) {
             $level = [];
             foreach ($block['block']['list'] as $item) {
-                if (preg_match('/^<#/', $item['widget']) && array_search($item['widget'], $level) === false) {
+                if (preg_match('/^<#/', $item['widget']) && array_search($item['widget'], $level, true) === false) {
                     if (!in_array($item['widget'], array_keys($blocks))) {
                         throw new \Exception("Undefined block: {$item['widget']}");
                     }
