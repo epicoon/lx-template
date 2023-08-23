@@ -62,6 +62,10 @@ class JsCompiler extends JsCompilerExtension
             return $this->compile($text, $out);
         }, $code);
 
+        // Remove empty templates
+        $reg = '/#lx:tpl-begin(?: as (\b.+?\b))?;\s*#lx:tpl-end;/';
+        $code = preg_replace($reg, '', $code);
+
         return $code;
     }
     

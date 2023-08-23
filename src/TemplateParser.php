@@ -22,6 +22,10 @@ class TemplateParser implements FlightRecorderHolderInterface
     {
         $this->rootNode = TemplateNode::create();
         $this->blocks = [];
+        if ($text === '') {
+            return new TemplateTree($this->rootNode, $this->blocks);
+        }
+
         $this->prototypes = [];
         $this->elements = [];
 
