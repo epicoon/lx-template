@@ -4,16 +4,20 @@ namespace lx\template\tree;
 
 use lx;
 use lx\template\TemplateCompiler;
+use lx\template\tree\compiler\ForCompiler;
 use lx\template\tree\compiler\BlockCompiler;
 use lx\template\tree\compiler\NodeCompiler;
 use lx\template\tree\compiler\WidgetCompiler;
+use lx\template\tree\data\DefaultData;
 use lx\template\tree\data\NodeData;
 use lx\template\tree\data\WidgetNodeData;
 use lx\template\tree\data\BlockNodeData;
-use lx\template\tree\parser\NodeConfigParser;
-use lx\template\tree\parser\WidgetConfigParser;
-use lx\template\tree\parser\BlockConfigParser;
-use lx\template\tree\parser\TagConfigParser;
+use lx\template\tree\parser\NodeParser;
+use lx\template\tree\parser\ForParser;
+use lx\template\tree\parser\WidgetParser;
+use lx\template\tree\parser\BlockParser;
+use lx\template\tree\parser\TagParser;
+use lx\template\tree\renderer\ForRenderer;
 use lx\template\tree\renderer\BlockRenderer;
 use lx\template\tree\renderer\NodeRenderer;
 use lx\template\tree\renderer\WidgetRenderer;
@@ -23,13 +27,17 @@ class Factory
 {
     private static array $widgetNames = [];
     
-    public static function definyTypeByConfig(array $config): ?string
+    public static function defineTypeByConfig(array $config): ?string
     {
         $widget = $config['widget'] ?? null;
         if ($widget === null) {
             return null;
         }
-        
+
+        if (preg_match('/^<for /', $widget)) {
+            return TemplateNode::TYPE_FOR;
+        }
+
         if (preg_match('/^<#/', $widget)) {
             return TemplateNode::TYPE_BLOCK;
         }
@@ -49,17 +57,18 @@ class Factory
         return TemplateNode::TYPE_TAG;
     }
     
-    public static function createParser(string $type): ?NodeConfigParser
+    public static function createParser(string $type): ?NodeParser
     {
         switch ($type) {
-            case TemplateNode::TYPE_WIDGET: return new WidgetConfigParser();
-            case TemplateNode::TYPE_TAG: return new TagConfigParser();
-            case TemplateNode::TYPE_BLOCK: return new BlockConfigParser();
+            case TemplateNode::TYPE_FOR: return new ForParser();
+            case TemplateNode::TYPE_WIDGET: return new WidgetParser();
+            case TemplateNode::TYPE_TAG: return new TagParser();
+            case TemplateNode::TYPE_BLOCK: return new BlockParser();
         }
         return null;
     }
     
-    public static function createData(string $type): ?NodeData
+    public static function createData(string $type): NodeData
     {
         switch ($type) {
             case TemplateNode::TYPE_WIDGET:
@@ -68,12 +77,13 @@ class Factory
             case TemplateNode::TYPE_BLOCK:
                 return new BlockNodeData();
         }
-        return null;
+        return new DefaultData();
     }
 
     public static function createRenderer(string $type): ?NodeRenderer
     {
         switch ($type) {
+            case TemplateNode::TYPE_FOR: return new ForRenderer();
             case TemplateNode::TYPE_WIDGET: return new WidgetRenderer();
             case TemplateNode::TYPE_TAG: return new TagRenderer();
             case TemplateNode::TYPE_BLOCK: return new BlockRenderer();
@@ -84,6 +94,8 @@ class Factory
     public static function createCompiler(TemplateCompiler $compiler, string $type): ?NodeCompiler
     {
         switch ($type) {
+            case TemplateNode::TYPE_FOR:
+                return new ForCompiler($compiler);
             case TemplateNode::TYPE_WIDGET:
             case TemplateNode::TYPE_TAG:
                 return new WidgetCompiler($compiler);

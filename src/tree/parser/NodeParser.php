@@ -2,7 +2,7 @@
 
 namespace lx\template\tree\parser;
 
-abstract class NodeConfigParser
+abstract class NodeParser
 {
     abstract public function parse(array $config): array;
 }

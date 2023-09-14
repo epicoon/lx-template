@@ -4,10 +4,10 @@ namespace lx\template\tree\compiler;
 
 class WidgetCompiler extends NodeCompiler
 {
-    protected function run(): void
+    protected function run(): string
     {
         $def = $this->node->toArray();
-        $this->code = $this->getInitCode($def)
+        return $this->getInitCode($def)
             . $this->getMetaDataCode($def)
             . $this->getActionsCode($def);
     }

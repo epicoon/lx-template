@@ -14,22 +14,23 @@ class WidgetRenderer extends NodeRenderer
         return $this->node->toArray();
     }
 
-    protected function run(): void
+    protected function run(): string
     {
         $def = $this->toArray();
 
         $indent = str_repeat(self::INDENT, $this->node->getLevel());
         $widget = $this->renderWidget($def);
 
+        $code = '';
         $config = $this->renderMap($def['config'], '()');
         $metaData = $this->renderMap($def['metaData'], '{}');
 
-        $this->code = $indent . '<' . $widget
+        $code = $indent . '<' . $widget
             . ($config == '' ? '' : ' ' . $config)
             . ($metaData == '' ? '' : ' ' . $metaData)
             . '>';
-        if ($this->prettyMode && mb_strlen($this->code) > $this->lenLimit) {
-            $this->code = $indent . '<' . $widget
+        if ($this->prettyMode && mb_strlen($code) > $this->lenLimit) {
+            $code = $indent . '<' . $widget
                 . ($config == '' ? '' : PHP_EOL . $indent . self::INDENT . $config)
                 . ($metaData == '' ? '' : PHP_EOL . $indent . self::INDENT . $metaData)
                 . PHP_EOL . $indent . '>';
@@ -38,32 +39,34 @@ class WidgetRenderer extends NodeRenderer
         list($actions, $positioning) = $this->renderActions($def['actions']);
         if ($actions) {
             if ($this->prettyMode) {
-                $this->code .= PHP_EOL;
+                $code .= PHP_EOL;
                 $row = $indent . self::INDENT;
                 foreach ($actions as $action) {
                     if (mb_strlen($row) + mb_strlen($action) <= $this->lenLimit) {
                         $row .= $action;
                     } else {
-                        $this->code .= $row;
+                        $code .= $row;
                         $row = $indent . self::INDENT . $action;
                     }
                 }
-                $this->code .= $row;
+                $code .= $row;
             } else {
-                $this->code .= implode('', $actions);
+                $code .= implode('', $actions);
             }
         }
         if ($positioning) {
             if ($this->prettyMode) {
-                $this->code .= PHP_EOL . $indent . self::INDENT . $positioning;
+                $code .= PHP_EOL . $indent . self::INDENT . $positioning;
             } else {
-                $this->code .= $positioning;
+                $code .= $positioning;
             }
         }
 
         if ($def['inner'] != '') {
-            $this->code .= PHP_EOL . $indent . self::INDENT . $def['inner'];
+            $code .= PHP_EOL . $indent . self::INDENT . $def['inner'];
         }
+
+        return $code;
     }
 
     private function renderWidget(array $def): string

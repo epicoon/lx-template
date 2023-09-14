@@ -37,7 +37,7 @@ class TemplateParser implements FlightRecorderHolderInterface
 
         $text = preg_replace('/(\r\n|\r|\n)/', PHP_EOL, $text);
         $text .= PHP_EOL;
-        $preg = '/(?:^|\r|\n|\r\n)(<[\w\W]+?)(?:((?:\r|\n|\r\n)>[\w\W]+?)(?=(?:\r|\n|\r\n)(?:\S|\s*$))|(?=(?:\r|\n|\r\n)(?:\S|\s*$)))/';
+        $preg = '/(?:^|\r|\n|\r\n)(<[\w\W]+?)(?:((?:\r|\n|\r\n)\)?>[\w\W]+?)(?=(?:\r|\n|\r\n)(?:\S|\s*$))|(?=(?:\r|\n|\r\n)(?:\S|\s*$)))/';
         preg_match_all($preg, $text, $matches);
         $sections = [];
         foreach ($matches[0] as $i => $match) {
@@ -275,11 +275,13 @@ class TemplateParser implements FlightRecorderHolderInterface
                     $minIndent = $item;
                 }
             } elseif ($index == 2) {
-                $stringData['widget'] = StringHelper::smartReplace($item, [
-                    'search' => '\s+',
-                    'replacement' => '',
-                    'save' => '"',
-                ]);
+                $stringData['widget'] = preg_match('/^<(for |if )/', $item)
+                    ? $item
+                    : StringHelper::smartReplace($item, [
+                        'search' => '\s+',
+                        'replacement' => '',
+                        'save' => '"',
+                    ]);
             } else {
                 $stringData['tail'] = StringHelper::smartReplace($item, [
                     'search' => '\s+',

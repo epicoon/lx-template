@@ -6,11 +6,11 @@ use lx\template\tree\TemplateNode;
 
 class BlockRenderer extends NodeRenderer
 {
-    protected function run(): void
+    protected function run(): string
     {
         $node = $this->node;
         $indent = str_repeat(self::INDENT, $node->getLevel());
         $def = $node->toArray();
-        $this->code = $indent . $def['name'];
+        return $indent . $def['name'];
     }
 }

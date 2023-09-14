@@ -2,7 +2,7 @@
 
 namespace lx\template\tree\parser;
 
-class BlockConfigParser extends NodeConfigParser
+class BlockParser extends NodeParser
 {
     public function parse(array $config): array
     {

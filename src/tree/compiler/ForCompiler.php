@@ -2,7 +2,7 @@
 
 namespace lx\template\tree\compiler;
 
-class BlockCompiler extends NodeCompiler
+class ForCompiler extends NodeCompiler
 {
     protected function run(): string
     {

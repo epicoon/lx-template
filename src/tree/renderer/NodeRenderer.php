@@ -10,16 +10,14 @@ abstract class NodeRenderer
 
     protected TemplateNode $node;
     protected bool $prettyMode;
-    protected string $code;
-    
+
     public function render(TemplateNode $node, bool $pretty): string
     {
         $this->node = $node;
         $this->prettyMode = $pretty;
         $this->code = '';
-        $this->run();
-        return $this->code;
+        return $this->run();
     }
     
-    abstract protected function run(): void;
+    abstract protected function run(): string;
 }

@@ -4,7 +4,7 @@ namespace lx\template\tree\parser;
 
 use lx\StringHelper;
 
-class WidgetConfigParser extends NodeConfigParser
+class WidgetParser extends NodeParser
 {
     public function parse(array $config): array
     {

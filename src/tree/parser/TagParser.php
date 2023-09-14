@@ -2,7 +2,7 @@
 
 namespace lx\template\tree\parser;
 
-class TagConfigParser extends WidgetConfigParser
+class TagParser extends WidgetParser
 {
     public function parse(array $config): array
     {

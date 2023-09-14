@@ -3,11 +3,13 @@
 namespace lx\template\tree;
 
 use lx\template\tree\data\NodeData;
-use lx\template\tree\parser\NodeConfigParser;
+use lx\template\tree\parser\NodeParser;
 
 class TemplateNode
 {
     const TYPE_COMMON = 'common';
+    const TYPE_FOR = 'for';
+    //TODO if
     const TYPE_WIDGET = 'widget';
     const TYPE_TAG = 'tag';
     const TYPE_BLOCK = 'block';
@@ -33,7 +35,7 @@ class TemplateNode
     {
         $node = new self();
         $node->level = $config['indent'] ?? 0;
-        $type = Factory::definyTypeByConfig($config);
+        $type = Factory::defineTypeByConfig($config);
         if (!$type) {
             $node->type = self::TYPE_COMMON;
             $node->data = null;

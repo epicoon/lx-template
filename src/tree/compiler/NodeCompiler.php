@@ -10,8 +10,7 @@ abstract class NodeCompiler
     protected TemplateCompiler $templateCompiler;
     protected TemplateNode $node;
     protected string $var;
-    protected string $code;
-    
+
     public function __construct(TemplateCompiler $templateCompiler)
     {
         $this->templateCompiler = $templateCompiler;
@@ -21,10 +20,8 @@ abstract class NodeCompiler
     {
         $this->node = $node;
         $this->var = $var;
-        $this->code = '';
-        $this->run();
-        return $this->code;
+        return $this->run();
     }
 
-    abstract protected function run(): void;
+    abstract protected function run(): string;
 }

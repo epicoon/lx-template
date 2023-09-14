@@ -56,7 +56,6 @@ class TemplateCompiler
         $children = $this->tree->getRootNode()->getChildren();
         $code = $this->compileNodes($children);
 
-
         $codeEnd = ($this->withOutput)
             ? "return __out__;})();"
             : '})();';
@@ -74,38 +73,37 @@ class TemplateCompiler
     {
         $code = '';
         foreach ($nodes as $node) {
-            if ($node->isType(TemplateNode::TYPE_BLOCK)) {
-                $def = $node->toArray();
-                $name = $def['name'];
-                $func = $this->funcMap[$name];
-                $code .= "$func();";
-                continue;
-            }
+            switch (true) {
+                case $node->isType(TemplateNode::TYPE_BLOCK):
+                    $code .= $this->compileBlock($node);
+                    break;
 
-            $varName = '_w' . $this->varCounter++;
-            $code .= $this->compileWidget($node, $varName);
+                case $node->isType(TemplateNode::TYPE_WIDGET):
+                case $node->isType(TemplateNode::TYPE_TAG):
+                    $code .= $this->compileWidget($node);
+                    break;
 
-            $children = $node->getChildren();
-            if (empty($children)) {
-                continue;
-            }
-
-            if ($node->getLevel() == 0) {
-                $code .= "$varName.useRenderCache();";
-            }
-            $code .= "$varName.begin();";
-            $code .= $this->compileNodes($node->getChildren());
-            $code .= "$varName.end();";
-            if ($node->getLevel() == 0) {
-                $code .= "$varName.applyRenderCache();";
+                case $node->isType(TemplateNode::TYPE_FOR):
+                    $code .= $this->compileFor($node);
+                    break;
             }
         }
 
         return $code;
     }
 
-    private function compileWidget(TemplateNode $node, string $varName): string
+    private function compileBlock(TemplateNode $node): string
     {
+        $def = $node->toArray();
+        $name = $def['name'];
+        $func = $this->funcMap[$name];
+        return "$func();";
+    }
+
+    private function compileWidget(TemplateNode $node): string
+    {
+        $varName = '_w' . $this->varCounter++;
+
         $compiler = $this->getCompiler($node);
         $nodeCode = $compiler->compile($node, $varName);
 
@@ -123,9 +121,43 @@ class TemplateCompiler
             }
         }
 
+        $children = $node->getChildren();
+        if (empty($children)) {
+            return $nodeCode;
+        }
+
+        if ($node->getLevel() == 0) {
+            $nodeCode .= "$varName.useRenderCache();";
+        }
+        $nodeCode .= "$varName.begin();";
+        $nodeCode .= $this->compileNodes($children);
+        $nodeCode .= "$varName.end();";
+        if ($node->getLevel() == 0) {
+            $nodeCode .= "$varName.applyRenderCache();";
+        }
+
         return $nodeCode;
     }
-    
+
+    private function compileFor(TemplateNode $node): string
+    {
+        $children = $node->getChildren();
+        if (empty($children)) {
+            return '';
+        }
+
+        $def = $node->toArray();
+        $var = $def['var'];
+        $from = $def['from'];
+        $to = $def['to'];
+
+        $nodeCode = "for (let $var=$from, _lxcount=$to; $var<=_lxcount; $var++) {";
+        $nodeCode .= $this->compileNodes($children);
+        $nodeCode .= '}';
+
+        return $nodeCode;
+    }
+
     private function getOutString(string $key, string $varName): string
     {
         return "_out('{$key}',$varName);";
