@@ -190,7 +190,7 @@ class __inBlocks {
 
     static __getNodesWithBlock(self, blockName) {
         let list = [];
-        self.root.eachNode(tempNode=>{
+        self.root.eachNodeRecursive(tempNode=>{
             if (tempNode.data.type == lxsc.ContentMap.TYPE_BLOCK && tempNode.data.data.name == blockName)
                 list.push(tempNode);
         });
@@ -223,7 +223,7 @@ class __inBlocks {
 
     static __getBlocksMap(self) {
         const blocksMap = {};
-        self.blocks.eachNode(tempNode=>{
+        self.blocks.eachNodeRecursive(tempNode=>{
             if (tempNode.data.type == lxsc.ContentMap.TYPE_BLOCK) {
                 let name = tempNode.data.data.name;
                 if (!(name in blocksMap)) blocksMap[name] = [];

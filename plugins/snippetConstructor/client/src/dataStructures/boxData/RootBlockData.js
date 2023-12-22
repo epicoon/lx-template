@@ -19,8 +19,8 @@ class RootBlockData extends lxsc.BoxData {
             if (nodeData.name !== rootBlockName) return;
             list.push(nodeData)
         }
-        this.contentMap.root.eachNode(node=>check(node));
-        this.contentMap.blocks.eachNode(node=>check(node));
+        this.contentMap.root.eachNodeRecursive(node=>check(node));
+        this.contentMap.blocks.eachNodeRecursive(node=>check(node));
 
         list.forEach(nodeData=>nodeData.del());
         super.del();

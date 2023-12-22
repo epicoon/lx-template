@@ -137,7 +137,7 @@ function __getBlocksList(boxData) {
         let node = blocks.nodes[i];
         if (node.data === rootBlock) continue;
         let valid = true;
-        node.eachNode(iNode=>{
+        node.eachNodeRecursive(iNode=>{
             if (iNode.data.name === rootBlock.name)
                 valid = false;
         });
